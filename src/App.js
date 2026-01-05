@@ -1,7 +1,13 @@
 import { useState, useEffect } from 'react';
 
 function App() {
-  const [currentPage, setCurrentPage] = useState('home');
+  const [currentPage, setCurrentPage] = useState(() => {
+    // Secret URL: add ?notes to access blog
+    if (window.location.search.includes('notes')) {
+      return 'blog';
+    }
+    return 'home';
+  });
 
   if (currentPage === 'blog') {
     return <Blog onNavigate={setCurrentPage} />;
@@ -16,7 +22,21 @@ function Home({ onNavigate }) {
 
   useEffect(() => {
     setIsLoaded(true);
-  }, []);
+    
+    // Secret key: type "notes" to access blog
+    let keys = '';
+    const handleKeyPress = (e) => {
+      keys += e.key.toLowerCase();
+      if (keys.includes('notes')) {
+        onNavigate('blog');
+        keys = '';
+      }
+      // Reset after 2 seconds of no typing
+      setTimeout(() => { keys = ''; }, 2000);
+    };
+    window.addEventListener('keypress', handleKeyPress);
+    return () => window.removeEventListener('keypress', handleKeyPress);
+  }, [onNavigate]);
 
   // Dots animation styles
   const dotsKeyframes = `
@@ -78,7 +98,7 @@ function Home({ onNavigate }) {
   ];
 
   const education = [
-    { degree: 'M.S. in Electrical and Electronics Engineering', school: 'Istanbul University', note: 'No thesis (Not Complete)' },
+    { degree: 'M.S. in Electrical and Electronics Engineering', school: 'Istanbul University', note: 'Courses Completed, No Thesis (Incomplete)' },
     { degree: 'B.S. in Computer Engineering', school: 'Fatih University', note: '' },
   ];
 
@@ -164,6 +184,7 @@ function Home({ onNavigate }) {
           <button
             onClick={() => onNavigate('blog')}
             style={{
+              display: 'none',
               color: '#2D5A5A',
               background: 'none',
               border: 'none',
@@ -733,28 +754,325 @@ function Home({ onNavigate }) {
   );
 }
 
+
+
 function Blog({ onNavigate }) {
-  const blogPosts = [
+  const [activeSection, setActiveSection] = useState('key-components');
+  const [expandedMenus, setExpandedMenus] = useState(['az-204', 'azure-app-service']);
+
+  const toggleMenu = (menu) => {
+    setExpandedMenus(prev => 
+      prev.includes(menu) ? prev.filter(m => m !== menu) : [...prev, menu]
+    );
+  };
+
+  const menuItems = [
     {
-      id: 1,
-      title: 'Welcome to My Blog',
-      date: 'January 2, 2026',
+      id: 'az-204',
+      title: 'AZ-204 Certification',
+      color: 'terracotta',
+      children: [
+        {
+          id: 'azure-app-service',
+          title: 'Azure App Service',
+          children: [
+            { id: 'key-components', title: 'Key Components' },
+            { id: 'authentication', title: 'Authentication' },
+            { id: 'inbound-outbound', title: 'Inbound and Outbound Control' },
+            { id: 'deploy', title: 'Deploy' },
+          ]
+        },
+      ]
+    },
+    {
+      id: 'ai-900',
+      title: 'AI-900 AI Fundamentals',
+      color: 'purple',
+      children: [
+        {
+          id: 'ai-concepts',
+          title: 'AI Concepts',
+          children: [
+            { id: 'ai-intro', title: 'Introduction to AI' },
+            { id: 'ml-basics', title: 'Machine Learning Basics' },
+            { id: 'azure-ai-services', title: 'Azure AI Services' },
+          ]
+        },
+      ]
+    },
+    {
+      id: 'angular',
+      title: 'Angular',
       color: 'green',
-      content: `Welcome to my personal blog! I'm excited to start sharing my experiences and insights from over 8 years in software development.
-
-Here, I'll be writing about:
-• .NET and C# best practices
-• Azure cloud solutions and architectures
-• Angular and frontend development tips
-• Career growth in tech
-• Lessons learned from enterprise projects
-
-Stay tuned for more posts coming soon!`,
+      children: [
+        {
+          id: 'angular-fundamentals',
+          title: 'Fundamentals',
+          children: [
+            { id: 'angular-components', title: 'Components' },
+            { id: 'angular-services', title: 'Services & DI' },
+            { id: 'angular-routing', title: 'Routing' },
+          ]
+        },
+      ]
     },
   ];
 
+  const content = {
+    'key-components': {
+      title: 'Key Components',
+      color: 'terracotta',
+      body: `• Scaling up and out
+• Container support
+• CI/CD support
+
+When you create an App Service plan, the following is planned:
+• Number of VMs
+• Size of VMs
+• OS
+• Pricing Tier
+
+Free/Shared Tiers share the same VM as other plans.
+Other tiers have at least one dedicated VM for your app.
+Isolated tiers run on dedicated VNET.
+
+If the plan is to run on 5 instances, then all apps will run on all 5 instances. They will scale out together - if needed.
+
+If you want to scale one app out independently or you need resources in different geographical regions then Isolate the app.`
+    },
+    'authentication': {
+      title: 'Authentication',
+      color: 'terracotta',
+      body: `Azure App Service provides built-in authentication and authorization support.
+
+• Sign in users with identity providers (Microsoft, Google, Facebook, Twitter)
+• Built-in token store
+• Session management
+• Token refresh
+
+Authentication flow:
+1. Sign user in → Redirect to provider
+2. Post-authentication → Provider redirects back with token
+3. Validate token → App Service validates and stores token
+4. Serve authenticated content → Request continues with auth headers`
+    },
+    'inbound-outbound': {
+      title: 'Inbound and Outbound Control',
+      color: 'terracotta',
+      body: `Inbound Features:
+• App-assigned address
+• Access restrictions
+• Service endpoints
+• Private endpoints
+
+Outbound Features:
+• Hybrid connections
+• Gateway-required VNet integration
+• VNet integration
+
+Network behavior depends on the pricing tier:
+• Free/Shared: Multi-tenant, outbound IPs shared
+• Basic and above: Dedicated outbound IPs
+• Isolated: Full network isolation`
+    },
+    'deploy': {
+      title: 'Deploy',
+      color: 'terracotta',
+      body: `Deployment methods:
+
+• Azure DevOps
+• GitHub Actions
+• Bitbucket
+• Local Git
+• FTP/FTPS
+• ZIP deploy
+• CLI (az webapp up)
+
+Deployment slots:
+• Swap deployments with zero downtime
+• Warm up instances before swap
+• Auto swap for continuous deployment
+• Slot-specific app settings
+
+Best practices:
+• Use deployment slots for staging
+• Enable auto swap for dev/test
+• Use manual swap for production`
+    },
+    'ai-intro': {
+      title: 'Introduction to AI',
+      color: 'purple',
+      body: `What is Artificial Intelligence?
+
+• AI is software that imitates human behaviors and capabilities
+• Key workloads include:
+  - Machine Learning
+  - Computer Vision
+  - Natural Language Processing
+  - Document Intelligence
+  - Knowledge Mining
+  - Generative AI
+
+Types of AI:
+• Narrow AI - designed for specific tasks
+• General AI - human-level intelligence (theoretical)
+
+Responsible AI Principles:
+• Fairness
+• Reliability & Safety
+• Privacy & Security
+• Inclusiveness
+• Transparency
+• Accountability`
+    },
+    'ml-basics': {
+      title: 'Machine Learning Basics',
+      color: 'purple',
+      body: `What is Machine Learning?
+
+• ML is a subset of AI that enables systems to learn from data
+• Models are trained using historical data to make predictions
+
+Types of Machine Learning:
+
+Supervised Learning:
+• Classification - predict categories
+• Regression - predict numeric values
+
+Unsupervised Learning:
+• Clustering - group similar items
+
+Azure Machine Learning:
+• Automated ML
+• Designer (drag-and-drop)
+• Notebooks
+• MLflow integration`
+    },
+    'azure-ai-services': {
+      title: 'Azure AI Services',
+      color: 'purple',
+      body: `Azure AI Services Overview:
+
+Vision:
+• Computer Vision
+• Custom Vision
+• Face API
+
+Language:
+• Language Understanding (LUIS)
+• Text Analytics
+• Translator
+• QnA Maker
+
+Speech:
+• Speech-to-Text
+• Text-to-Speech
+• Speech Translation
+
+Decision:
+• Anomaly Detector
+• Content Moderator
+• Personalizer
+
+Azure OpenAI Service:
+• GPT models
+• DALL-E
+• Embeddings`
+    },
+    'angular-components': {
+      title: 'Components',
+      color: 'green',
+      body: `Angular Components
+
+Components are the building blocks of Angular apps.
+
+Structure:
+• @Component decorator
+• Template (HTML)
+• Styles (CSS)
+• Class (TypeScript)
+
+Example:
+@Component({
+  selector: 'app-hello',
+  template: '<h1>Hello {{name}}</h1>',
+  styles: ['h1 { color: blue; }']
+})
+  name = 'World';
+}
+
+Lifecycle Hooks:
+• ngOnInit - after component initialized
+• ngOnChanges - when input changes
+• ngOnDestroy - before component destroyed
+• ngAfterViewInit - after view initialized`
+    },
+    'angular-services': {
+      title: 'Services & DI',
+      color: 'green',
+      body: `Angular Services & Dependency Injection
+
+Services:
+• Reusable business logic
+• Shared data between components
+• API calls
+
+Creating a Service:
+@Injectable({
+  providedIn: 'root'
+})
+  getData() {
+    return ['item1', 'item2'];
+  }
+}
+
+Dependency Injection:
+• Angular's DI system provides instances
+• Constructor injection
+• Hierarchical injector
+
+Injection Tokens:
+• providedIn: 'root' - singleton
+• providedIn: 'any' - per module
+• Component providers - per component`
+    },
+    'angular-routing': {
+      title: 'Routing',
+      color: 'green',
+      body: `Angular Routing
+
+Setup:
+• RouterModule.forRoot(routes)
+• <router-outlet> in template
+
+Route Configuration:
+const routes: Routes = [
+  { path: '', component: HomeComponent },
+  { path: 'about', component: AboutComponent },
+  { path: 'user/:id', component: UserComponent },
+  { path: '**', component: NotFoundComponent }
+];
+
+Navigation:
+• routerLink directive
+• Router.navigate() method
+
+Route Guards:
+• CanActivate - protect route access
+• CanDeactivate - confirm leaving
+• Resolve - pre-fetch data
+
+Lazy Loading:
+loadChildren: () => import('./feature/feature.module')
+  .then(m => m.FeatureModule)`
+    },
+  };
+
   const colors = {
-    green: { bg: 'rgba(91, 138, 114, 0.1)', border: '#5B8A72' },
+    orange: { bg: 'rgba(224, 120, 80, 0.1)', border: '#E07850', text: '#E07850' },
+    green: { bg: 'rgba(91, 138, 114, 0.1)', border: '#5B8A72', text: '#5B8A72' },
+    blue: { bg: 'rgba(107, 143, 173, 0.1)', border: '#6B8FAD', text: '#6B8FAD' },
+    purple: { bg: 'rgba(147, 112, 165, 0.1)', border: '#9370A5', text: '#9370A5' },
   };
 
   return (
@@ -762,8 +1080,9 @@ Stay tuned for more posts coming soon!`,
       minHeight: '100vh',
       background: '#FDF6F0',
       color: '#1A3A3A',
-      fontFamily: '"Inter", sans-serif',
+      fontFamily: '"Nunito", "Inter", sans-serif',
     }}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600&display=swap');`}</style>
       {/* Navigation */}
       <nav style={{
         position: 'fixed',
@@ -775,133 +1094,284 @@ Stay tuned for more posts coming soon!`,
         justifyContent: 'space-between',
         alignItems: 'center',
         zIndex: 100,
-        background: 'rgba(253, 246, 240, 0.95)',
+        background: '#B07171',
         backdropFilter: 'blur(10px)',
         gap: '24px',
       }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <span
+            style={{
+              fontFamily: '"Cormorant Garamond", serif',
+              fontSize: 'clamp(18px, 4vw, 24px)',
+              fontWeight: 300,
+              letterSpacing: 'clamp(2px, 0.5vw, 4px)',
+              color: '#FDF6F0',
+            }}
+          >
+            AYSE'S NOTES
+          </span>
+        </div>
         <button
-          onClick={() => onNavigate('home')}
+          onClick={() => onNavigate && onNavigate('home')}
           style={{
-            fontFamily: '"Cormorant Garamond", serif',
-            fontSize: 'clamp(18px, 4vw, 24px)',
-            fontWeight: 300,
-            letterSpacing: 'clamp(2px, 0.5vw, 4px)',
-            color: '#1A3A3A',
-            background: 'none',
+            background: 'rgba(253, 246, 240, 0.2)',
             border: 'none',
+            color: '#FDF6F0',
+            padding: '8px 16px',
+            borderRadius: '20px',
             cursor: 'pointer',
-            padding: 0,
-            whiteSpace: 'nowrap',
+            fontSize: '13px',
+            fontFamily: '"Nunito", sans-serif',
           }}
         >
-          AYSE
+          ← Portfolio
         </button>
-        <div style={{ display: 'flex', gap: 'clamp(16px, 3vw, 32px)' }}>
-          <button
-            onClick={() => onNavigate('home')}
-            style={{
-              color: '#2D5A5A',
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              fontSize: '14px',
-              fontWeight: 400,
-              opacity: 0.8,
-              padding: 0,
-            }}
-          >
-            Home
-          </button>
-          <button
-            style={{
-              color: '#1A3A3A',
-              background: 'none',
-              border: 'none',
-              fontSize: '14px',
-              fontWeight: 500,
-              padding: 0,
-            }}
-          >
-            Blog
-          </button>
-        </div>
       </nav>
 
-      {/* Blog Header */}
-      <section style={{
-        padding: '140px 32px 60px',
-        maxWidth: '800px',
-        margin: '0 auto',
-        textAlign: 'center',
+      {/* Main Content with Sidebar */}
+      <div style={{
+        display: 'flex',
+        paddingTop: '80px',
+        minHeight: '100vh',
       }}>
-        <h1 style={{
-          fontFamily: '"Cormorant Garamond", serif',
-          fontSize: '42px',
-          fontWeight: 300,
-          letterSpacing: '6px',
-          marginBottom: '12px',
-          color: '#1A3A3A',
+        {/* Sidebar */}
+        <aside style={{
+          width: '280px',
+          minWidth: '280px',
+          background: 'rgba(26, 58, 58, 0.03)',
+          borderRight: '1px solid rgba(26, 58, 58, 0.1)',
+          padding: '24px 0',
+          position: 'sticky',
+          top: '80px',
+          height: 'calc(100vh - 80px)',
+          overflowY: 'auto',
         }}>
-          BLOG
-        </h1>
-        <p style={{
-          fontSize: '12px',
-          color: '#2D5A5A',
-          opacity: 0.6,
-          letterSpacing: '1px',
-        }}>
-          thoughts on software development
-        </p>
-      </section>
+          {/* Colorful dots decoration - clickable */}
+          <div style={{ 
+            display: 'flex', 
+            gap: '6px', 
+            padding: '0 16px', 
+            marginBottom: '20px' 
+          }}>
+            <button 
+              onClick={() => {
+                setExpandedMenus(prev => prev.includes('az-204') ? prev : [...prev, 'az-204', 'azure-app-service']);
+                setActiveSection('key-components');
+              }}
+              style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#B07171', border: 'none', cursor: 'pointer', padding: 0 }} 
+              title="AZ-204 Certification"
+            />
+            <button 
+              onClick={() => {
+                setExpandedMenus(prev => prev.includes('ai-900') ? prev : [...prev, 'ai-900', 'ai-concepts']);
+                setActiveSection('ai-intro');
+              }}
+              style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#9370A5', border: 'none', cursor: 'pointer', padding: 0 }} 
+              title="AI-900 AI Fundamentals"
+            />
+            <button 
+              onClick={() => {
+                setExpandedMenus(prev => prev.includes('angular') ? prev : [...prev, 'angular', 'angular-fundamentals']);
+                setActiveSection('angular-components');
+              }}
+              style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#5B8A72', border: 'none', cursor: 'pointer', padding: 0 }} 
+              title="Angular"
+            />
+          </div>
+          
+          {menuItems.map((topic) => (
+            <div key={topic.id} style={{ marginBottom: '16px' }}>
+              {/* Topic Header (e.g., AZ-204) */}
+              <button
+                onClick={() => toggleMenu(topic.id)}
+                style={{
+                  width: 'calc(100% - 24px)',
+                  margin: '0 12px',
+                  padding: '12px 16px',
+                  background: colors[topic.color]?.border || '#E07850',
+                  borderRadius: '12px',
+                  border: 'none',
+                  textAlign: 'left',
+                  cursor: 'pointer',
+                  fontSize: '15px',
+                  fontWeight: 500,
+                  color: '#FDF6F0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  transition: 'all 0.2s',
+                }}
+              >
+                <span style={{ 
+                  transform: expandedMenus.includes(topic.id) ? 'rotate(90deg)' : 'rotate(0deg)',
+                  transition: 'transform 0.2s',
+                  fontSize: '10px',
+                  color: '#FDF6F0',
+                }}>▶</span>
+                {topic.title}
+              </button>
+              
+              {/* Subtopics (e.g., Azure App Service) */}
+              {expandedMenus.includes(topic.id) && topic.children.map((subtopic) => (
+                <div key={subtopic.id} style={{ marginLeft: '12px' }}>
+                  <button
+                    onClick={() => toggleMenu(subtopic.id)}
+                    style={{
+                      width: '100%',
+                      padding: '8px 16px',
+                      background: 'none',
+                      border: 'none',
+                      textAlign: 'left',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      fontWeight: 500,
+                      color: '#1A3A3A',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                    }}
+                  >
+                    <span style={{ 
+                      transform: expandedMenus.includes(subtopic.id) ? 'rotate(90deg)' : 'rotate(0deg)',
+                      transition: 'transform 0.2s',
+                      fontSize: '8px',
+                      color: colors[topic.color]?.text,
+                    }}>▶</span>
+                    {subtopic.title}
+                  </button>
+                  
+                  {/* Sections (e.g., Key Components) */}
+                  {expandedMenus.includes(subtopic.id) && (
+                    <div style={{ marginLeft: '16px' }}>
+                      {subtopic.children.map((section) => {
+                        const topicColor = topic.color;
+                        return (
+                          <button
+                            key={section.id}
+                            onClick={() => setActiveSection(section.id)}
+                            style={{
+                              width: '100%',
+                              padding: '6px 16px',
+                              background: activeSection === section.id ? colors[topicColor]?.bg : 'none',
+                              border: 'none',
+                              borderLeft: activeSection === section.id ? `2px solid ${colors[topicColor]?.border}` : '2px solid transparent',
+                              textAlign: 'left',
+                              cursor: 'pointer',
+                              fontSize: '13px',
+                              color: activeSection === section.id ? colors[topicColor]?.text : '#1A3A3A',
+                              transition: 'all 0.2s',
+                              fontWeight: activeSection === section.id ? 600 : 400,
+                            }}
+                          >
+                            {section.title}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          ))}
+        </aside>
 
-      {/* Blog Posts */}
-      <section style={{
-        padding: '40px 32px 80px',
-        maxWidth: '800px',
-        margin: '0 auto',
-      }}>
-        {blogPosts.map((post) => (
-          <article 
-            key={post.id}
-            style={{
-              marginBottom: '24px',
-              padding: '24px',
-              borderRadius: '20px',
-              background: colors[post.color].bg,
-              borderLeft: `3px solid ${colors[post.color].border}`,
-            }}
-          >
-            <p style={{
-              fontSize: '11px',
-              color: '#2D5A5A',
-              marginBottom: '12px',
-              textTransform: 'uppercase',
-              letterSpacing: '1px',
-              opacity: 0.6,
+        {/* Content Area */}
+        <main style={{
+          flex: 1,
+          padding: '40px',
+          maxWidth: '900px',
+          display: 'flex',
+          gap: '20px',
+          alignItems: 'flex-start',
+        }}>
+          <div style={{
+            flex: 1,
+            padding: '24px',
+            borderRadius: '20px',
+            background: colors[content[activeSection]?.color]?.bg || colors.green.bg,
+            borderLeft: `3px solid ${colors[content[activeSection]?.color]?.border || colors.green.border}`,
+          }}>
+            <h1 style={{
+              fontFamily: '"Nunito", sans-serif',
+              fontSize: '20px',
+              fontWeight: 600,
+              marginBottom: '20px',
+              color: colors[content[activeSection]?.color]?.text || '#1A3A3A',
+              background: 'rgba(26, 58, 58, 0.05)',
+              margin: '-24px -24px 20px -24px',
+              padding: '18px 24px',
+              borderRadius: '17px 17px 0 0',
+              letterSpacing: '0.5px',
             }}>
-              {post.date}
-            </p>
-            <h2 style={{
-              fontFamily: '"Cormorant Garamond", serif',
-              fontSize: '26px',
-              fontWeight: 400,
-              marginBottom: '16px',
-              color: '#1A3A3A',
-            }}>
-              {post.title}
-            </h2>
-            <div style={{
+              {content[activeSection]?.title}
+            </h1>
+            
+            <pre style={{
               fontSize: '15px',
               color: '#1A3A3A',
-              lineHeight: 1.8,
-              whiteSpace: 'pre-line',
+              lineHeight: 1.9,
+              whiteSpace: 'pre-wrap',
+              fontFamily: '"Nunito", sans-serif',
+              fontWeight: 400,
+              margin: 0,
               opacity: 0.85,
             }}>
-              {post.content}
-            </div>
-          </article>
-        ))}
-      </section>
+              {content[activeSection]?.body}
+            </pre>
+          </div>
+          
+          {/* To-do list note - responsive */}
+          <div style={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            gap: '15px',
+            paddingTop: '10px',
+            flexShrink: 0,
+          }}>
+            <svg 
+              viewBox="0 0 130 155" 
+              style={{ 
+                width: 'clamp(90px, 14vw, 130px)', 
+                height: 'auto',
+              }}
+            >
+              {/* Note paper */}
+              <rect x="8" y="10" width="114" height="140" fill="#FFFDE7" stroke="#E0D9C8" strokeWidth="2" rx="2" transform="rotate(-1 65 80)"/>
+              {/* Pin on paper */}
+              <circle cx="65" cy="22" r="7" fill="#B07171"/>
+              <ellipse cx="65" cy="22" rx="4" ry="3" fill="#C88585"/>
+              {/* Title */}
+              <text x="16" y="45" fontSize="12" fontWeight="600" fill="#1A3A3A" fontFamily="Nunito, sans-serif">To Do</text>
+              
+              {/* Item 1 - Youtube videos (checked) */}
+              <rect x="16" y="53" width="11" height="11" fill="none" stroke="#5B8A72" strokeWidth="2" rx="2"/>
+              <path d="M19 58 L22 61 L25 55" stroke="#5B8A72" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+              <text x="32" y="62" fontSize="9" fill="#1A3A3A" fontFamily="Nunito, sans-serif" textDecoration="line-through" opacity="0.5">Youtube videos</text>
+              
+              {/* Item 2 - Udemy classes (checked) */}
+              <rect x="16" y="69" width="11" height="11" fill="none" stroke="#5B8A72" strokeWidth="2" rx="2"/>
+              <path d="M19 74 L22 77 L25 71" stroke="#5B8A72" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+              <text x="32" y="78" fontSize="9" fill="#1A3A3A" fontFamily="Nunito, sans-serif" textDecoration="line-through" opacity="0.5">Udemy classes</text>
+              
+              {/* Item 3 - Microsoft Learn (unchecked) */}
+              <rect x="16" y="85" width="11" height="11" fill="none" stroke="#DDD" strokeWidth="1.5" rx="2"/>
+              <text x="32" y="94" fontSize="9" fill="#1A3A3A" fontFamily="Nunito, sans-serif">Microsoft Learn</text>
+              
+              {/* Item 4 - Document (unchecked) */}
+              <rect x="16" y="101" width="11" height="11" fill="none" stroke="#DDD" strokeWidth="1.5" rx="2"/>
+              <text x="32" y="110" fontSize="9" fill="#1A3A3A" fontFamily="Nunito, sans-serif">Document</text>
+              
+              {/* Item 5 - Mock exams (unchecked) */}
+              <rect x="16" y="117" width="11" height="11" fill="none" stroke="#DDD" strokeWidth="1.5" rx="2"/>
+              <text x="32" y="126" fontSize="9" fill="#1A3A3A" fontFamily="Nunito, sans-serif">Mock exams</text>
+              
+              {/* Item 6 - Schedule the exam (unchecked) */}
+              <rect x="16" y="133" width="11" height="11" fill="none" stroke="#DDD" strokeWidth="1.5" rx="2"/>
+              <text x="32" y="142" fontSize="9" fill="#1A3A3A" fontFamily="Nunito, sans-serif">Schedule the exam</text>
+            </svg>
+          </div>
+        </main>
+      </div>
 
       {/* Footer */}
       <footer style={{
@@ -909,6 +1379,35 @@ Stay tuned for more posts coming soon!`,
         textAlign: 'center',
         borderTop: '1px solid rgba(26, 58, 58, 0.1)',
       }}>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '6px', marginBottom: '12px' }}>
+          <button 
+            onClick={() => {
+              setExpandedMenus(prev => prev.includes('az-204') ? prev : [...prev, 'az-204', 'azure-app-service']);
+              setActiveSection('key-components');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#B07171', border: 'none', cursor: 'pointer', padding: 0 }} 
+            title="AZ-204 Certification"
+          />
+          <button 
+            onClick={() => {
+              setExpandedMenus(prev => prev.includes('ai-900') ? prev : [...prev, 'ai-900', 'ai-concepts']);
+              setActiveSection('ai-intro');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#9370A5', border: 'none', cursor: 'pointer', padding: 0 }} 
+            title="AI-900 AI Fundamentals"
+          />
+          <button 
+            onClick={() => {
+              setExpandedMenus(prev => prev.includes('angular') ? prev : [...prev, 'angular', 'angular-fundamentals']);
+              setActiveSection('angular-components');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#5B8A72', border: 'none', cursor: 'pointer', padding: 0 }} 
+            title="Angular"
+          />
+        </div>
         <p style={{
           fontSize: '12px',
           color: '#2D5A5A',
@@ -920,5 +1419,6 @@ Stay tuned for more posts coming soon!`,
     </div>
   );
 }
+
 
 export default App;
