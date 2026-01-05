@@ -70,6 +70,22 @@ function Home({ onNavigate }) {
       50% { transform: translateY(-5px); }
     }
 
+    @keyframes bounce {
+      0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+      40% { transform: translateY(-10px); }
+      60% { transform: translateY(-5px); }
+    }
+
+    .scroll-indicator {
+      animation: bounce 2s ease infinite;
+      cursor: pointer;
+      transition: opacity 0.3s ease;
+    }
+
+    .scroll-indicator:hover {
+      opacity: 1 !important;
+    }
+
     .nav-link {
       position: relative;
       transition: all 0.3s ease;
@@ -394,6 +410,7 @@ function Home({ onNavigate }) {
         padding: 'clamp(100px, 12vh, 140px) clamp(24px, 5vw, 80px) clamp(60px, 8vh, 100px)',
         maxWidth: 'min(1400px, 90vw)',
         margin: '0 auto',
+        position: 'relative',
       }}>
         <div style={{
           opacity: isLoaded ? 1 : 0,
@@ -551,6 +568,45 @@ function Home({ onNavigate }) {
             </p>
           </div>
         </div>
+
+        {/* Scroll Indicator */}
+        <a
+          href="#experience"
+          className="scroll-indicator"
+          style={{
+            position: 'absolute',
+            bottom: 'clamp(24px, 4vh, 48px)',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '8px',
+            textDecoration: 'none',
+            opacity: 0.6,
+          }}
+        >
+          <span style={{
+            fontSize: 'clamp(10px, 0.9vw, 13px)',
+            color: '#2D5A5A',
+            letterSpacing: '2px',
+            textTransform: 'uppercase',
+          }}>
+            Scroll
+          </span>
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#2D5A5A"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M12 5v14M5 12l7 7 7-7" />
+          </svg>
+        </a>
       </section>
 
       {/* Experience */}
