@@ -205,37 +205,38 @@ function Home({ onNavigate }) {
             Full Stack Engineer
           </p>
 
-          <h1 style={{
-            fontFamily: '"Cormorant Garamond", serif',
-            fontSize: 'clamp(36px, 6vw, 56px)',
-            fontWeight: 300,
-            letterSpacing: '2px',
-            marginBottom: '16px',
-            color: '#1A3A3A',
-          }}>
-            Hello, I'm Ayse
-          </h1>
+          <div style={{ display: 'inline-block' }}>
+            <h1 style={{
+              fontFamily: '"Cormorant Garamond", serif',
+              fontSize: 'clamp(36px, 6vw, 56px)',
+              fontWeight: 300,
+              letterSpacing: '2px',
+              marginBottom: '16px',
+              color: '#1A3A3A',
+            }}>
+              Hello, I'm Ayse
+            </h1>
 
-          {/* Animated Dots */}
-          <div style={{
-            display: 'flex',
-            gap: 'clamp(4px, 1vw, 10px)',
-            marginBottom: '24px',
-            width: 'clamp(280px, 50vw, 420px)',
-            justifyContent: 'space-between',
-          }}>
-            {[...Array(15)].map((_, i) => (
-              <span
-                key={i}
-                style={{
-                  width: 'clamp(4px, 0.8vw, 5px)',
-                  height: 'clamp(4px, 0.8vw, 5px)',
-                  borderRadius: '50%',
-                  background: i % 3 === 0 ? '#E07850' : i % 3 === 1 ? '#5B8A72' : '#6B8FAD',
-                  animation: `fadeInOut 4s ease-in-out ${i * 0.15}s infinite`,
-                }}
-              />
-            ))}
+            {/* Animated Dots */}
+            <div style={{
+              display: 'flex',
+              marginBottom: '24px',
+              width: '100%',
+              justifyContent: 'space-between',
+            }}>
+              {[...Array(13)].map((_, i) => (
+                <span
+                  key={i}
+                  style={{
+                    width: 'clamp(4px, 0.8vw, 5px)',
+                    height: 'clamp(4px, 0.8vw, 5px)',
+                    borderRadius: '50%',
+                    background: i % 3 === 0 ? '#E07850' : i % 3 === 1 ? '#5B8A72' : '#6B8FAD',
+                    animation: `fadeInOut 5s ease-in-out ${i * 0.2}s infinite`,
+                  }}
+                />
+              ))}
+            </div>
           </div>
 
           <p style={{
