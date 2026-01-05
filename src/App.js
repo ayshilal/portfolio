@@ -1,4 +1,17 @@
 import { useState, useEffect } from 'react';
+import { ApplicationInsights } from '@microsoft/applicationinsights-web';
+
+// Initialize Azure Application Insights
+const appInsights = new ApplicationInsights({
+  config: {
+    connectionString: 'InstrumentationKey=f6a037d3-26d9-4cfd-b518-683c3debe14d;IngestionEndpoint=https://centralus-2.in.applicationinsights.azure.com/;LiveEndpoint=https://centralus.livediagnostics.monitor.azure.com/;ApplicationId=2880261d-9745-454a-bbbb-a069ddf78632',
+    enableAutoRouteTracking: true,
+    disableFetchTracking: false,
+    enableCorsCorrelation: true,
+  }
+});
+appInsights.loadAppInsights();
+appInsights.trackPageView();
 
 function App() {
   const [currentPage, setCurrentPage] = useState(() => {
@@ -1017,8 +1030,8 @@ function Home({ onNavigate }) {
                 height: 'clamp(6px, 0.6vw, 10px)',
                 borderRadius: '50%',
                 background: color,
-                opacity: 0.6,
                 cursor: 'pointer',
+                animation: `fadeInOut 5s ease-in-out ${i * 0.3}s infinite`,
               }}
             />
           ))}
