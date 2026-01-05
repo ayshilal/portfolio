@@ -143,7 +143,7 @@ function Home({ onNavigate }) {
             whiteSpace: 'nowrap',
           }}
         >
-          AYSE HILAL
+          AYSE
         </button>
         <div style={{ display: 'flex', gap: 'clamp(16px, 3vw, 32px)', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
           {['About', 'Experience', 'Skills', 'Contact'].map((item) => (
@@ -213,7 +213,7 @@ function Home({ onNavigate }) {
             marginBottom: '16px',
             color: '#1A3A3A',
           }}>
-            Hello, I'm Ayse Hilal
+            Hello, I'm Ayse
           </h1>
 
           {/* Animated Dots */}
@@ -793,7 +793,7 @@ Stay tuned for more posts coming soon!`,
             whiteSpace: 'nowrap',
           }}
         >
-          AYSE HILAL
+          AYSE
         </button>
         <div style={{ display: 'flex', gap: 'clamp(16px, 3vw, 32px)' }}>
           <button
