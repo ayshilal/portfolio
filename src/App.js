@@ -22,7 +22,7 @@ function Home({ onNavigate }) {
 
   useEffect(() => {
     setIsLoaded(true);
-    
+
     // Secret key: type "notes" to access blog
     let keys = '';
     const handleKeyPress = (e) => {
@@ -38,15 +38,175 @@ function Home({ onNavigate }) {
     return () => window.removeEventListener('keypress', handleKeyPress);
   }, [onNavigate]);
 
-  // Dots animation styles
-  const dotsKeyframes = `
+  // Animation styles
+  const animationStyles = `
     @keyframes fadeInOut {
-      0%, 100% {
-        opacity: 0;
-      }
-      50% {
-        opacity: 1;
-      }
+      0%, 100% { opacity: 0; }
+      50% { opacity: 1; }
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes slideInLeft {
+      from { opacity: 0; transform: translateX(-20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    @keyframes scaleIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+
+    .nav-link {
+      position: relative;
+      transition: all 0.3s ease;
+    }
+
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: #E07850;
+      transition: width 0.3s ease;
+    }
+
+    .nav-link:hover::after {
+      width: 100%;
+    }
+
+    .nav-link:hover {
+      opacity: 1 !important;
+      color: #1A3A3A !important;
+    }
+
+    .tech-pill {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .tech-pill:hover {
+      transform: translateY(-2px);
+      background: rgba(26, 58, 58, 0.15) !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .experience-card {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .experience-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+    }
+
+    .skill-btn {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .skill-btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .skill-tag {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      animation: scaleIn 0.4s ease-out both;
+    }
+
+    .skill-tag:hover {
+      transform: translateY(-2px) scale(1.05);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .cert-card {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .cert-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(107, 143, 173, 0.2);
+    }
+
+    .cta-btn {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cta-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(224, 120, 80, 0.4);
+    }
+
+    .cta-btn:active {
+      transform: translateY(0);
+    }
+
+    .contact-link {
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .contact-link:hover {
+      opacity: 1 !important;
+      color: #E07850 !important;
+    }
+
+    .featured-card {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .featured-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 32px rgba(224, 120, 80, 0.15);
+    }
+
+    .section-title {
+      position: relative;
+      display: inline-block;
+    }
+
+    .section-title::after {
+      content: '';
+      position: absolute;
+      bottom: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 40px;
+      height: 2px;
+      background: linear-gradient(90deg, #E07850, #5B8A72);
+      border-radius: 2px;
+    }
+
+    .edu-card {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .edu-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(147, 112, 165, 0.2);
+    }
+
+    .footer-dot {
+      transition: all 0.3s ease;
+    }
+
+    .footer-dot:hover {
+      transform: scale(1.5);
     }
   `;
 
@@ -130,7 +290,7 @@ function Home({ onNavigate }) {
       color: '#1A3A3A',
       fontFamily: '"Inter", sans-serif',
     }}>
-      <style>{dotsKeyframes}</style>
+      <style>{animationStyles}</style>
       {/* Navigation */}
       <nav style={{
         position: 'fixed',
@@ -170,6 +330,7 @@ function Home({ onNavigate }) {
             <a
               key={item}
               href={`#${item.toLowerCase()}`}
+              className="nav-link"
               style={{
                 color: '#2D5A5A',
                 textDecoration: 'none',
@@ -281,14 +442,19 @@ function Home({ onNavigate }) {
             marginBottom: '40px',
             flexWrap: 'wrap',
           }}>
-            {['.NET', 'Azure', 'Angular', 'C#', 'SQL Server'].map((tech) => (
-              <span key={tech} style={{
-                padding: '10px 20px',
-                borderRadius: '50px',
-                fontSize: '13px',
-                background: 'rgba(26, 58, 58, 0.08)',
-                color: '#1A3A3A',
-              }}>
+            {['.NET', 'Azure', 'Angular', 'C#', 'SQL Server'].map((tech, i) => (
+              <span
+                key={tech}
+                className="tech-pill"
+                style={{
+                  padding: '10px 20px',
+                  borderRadius: '50px',
+                  fontSize: '13px',
+                  background: 'rgba(26, 58, 58, 0.08)',
+                  color: '#1A3A3A',
+                  cursor: 'default',
+                  animation: `scaleIn 0.4s ease-out ${i * 0.1}s both`,
+                }}>
                 {tech}
               </span>
             ))}
@@ -301,30 +467,31 @@ function Home({ onNavigate }) {
             flexWrap: 'wrap',
             fontSize: '14px',
           }}>
-            <a href="mailto:aysehilalyalciner@gmail.com" style={{ color: '#1A3A3A', textDecoration: 'none', opacity: 0.8 }}>
+            <a href="mailto:aysehilalyalciner@gmail.com" className="contact-link" style={{ color: '#1A3A3A', textDecoration: 'none', opacity: 0.8 }}>
               aysehilalyalciner@gmail.com
             </a>
-            <a href="tel:+19296780598" style={{ color: '#1A3A3A', textDecoration: 'none', opacity: 0.8 }}>
+            <a href="tel:+19296780598" className="contact-link" style={{ color: '#1A3A3A', textDecoration: 'none', opacity: 0.8 }}>
               (929) 678-0598
             </a>
-            <a href="https://linkedin.com/in/ahyalciner" target="_blank" rel="noopener noreferrer" style={{ color: '#1A3A3A', textDecoration: 'none', opacity: 0.8 }}>
+            <a href="https://linkedin.com/in/ahyalciner" className="contact-link" target="_blank" rel="noopener noreferrer" style={{ color: '#1A3A3A', textDecoration: 'none', opacity: 0.8 }}>
               LinkedIn
             </a>
-            <a href="https://github.com/ayshilal" target="_blank" rel="noopener noreferrer" style={{ color: '#1A3A3A', textDecoration: 'none', opacity: 0.8 }}>
+            <a href="https://github.com/ayshilal" className="contact-link" target="_blank" rel="noopener noreferrer" style={{ color: '#1A3A3A', textDecoration: 'none', opacity: 0.8 }}>
               GitHub
             </a>
-            
           </div>
 
           {/* Featured Project Card */}
-          <div style={{
-            marginTop: '48px',
-            padding: '24px',
-            borderRadius: '20px',
-            background: colors.orange.bg,
-            borderLeft: `3px solid ${colors.orange.border}`,
-            maxWidth: '400px',
-          }}>
+          <div
+            className="featured-card"
+            style={{
+              marginTop: '48px',
+              padding: '24px',
+              borderRadius: '20px',
+              background: colors.orange.bg,
+              borderLeft: `3px solid ${colors.orange.border}`,
+              maxWidth: '400px',
+            }}>
             <p style={{
               fontSize: '11px',
               color: '#2D5A5A',
@@ -393,11 +560,13 @@ function Home({ onNavigate }) {
           {experience.map((job, i) => (
             <div
               key={i}
+              className="experience-card"
               style={{
                 padding: '24px',
                 borderRadius: '20px',
                 background: colors[job.color].bg,
                 borderLeft: `3px solid ${colors[job.color].border}`,
+                animation: `fadeInUp 0.6s ease-out ${i * 0.15}s both`,
               }}
             >
               <div style={{
@@ -511,12 +680,13 @@ function Home({ onNavigate }) {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {education.map((edu, i) => (
-            <div key={i} style={{
+            <div key={i} className="edu-card" style={{
               padding: '24px',
               borderRadius: '20px',
               background: colors.purple.bg,
               borderLeft: `3px solid ${colors.purple.border}`,
               textAlign: 'center',
+              animation: `fadeInUp 0.5s ease-out ${i * 0.1}s both`,
             }}>
               <h3 style={{
                 fontFamily: '"Cormorant Garamond", serif',
@@ -580,15 +750,16 @@ function Home({ onNavigate }) {
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
+              className="skill-btn"
               style={{
                 padding: '10px 20px',
                 borderRadius: '50px',
                 fontSize: '13px',
                 border: 'none',
                 cursor: 'pointer',
-                transition: 'all 0.2s ease',
                 background: activeCategory === cat ? '#1A3A3A' : 'rgba(26, 58, 58, 0.08)',
                 color: activeCategory === cat ? 'white' : '#1A3A3A',
+                boxShadow: activeCategory === cat ? '0 4px 12px rgba(26, 58, 58, 0.2)' : 'none',
               }}
             >
               {cat}
@@ -597,17 +768,22 @@ function Home({ onNavigate }) {
         </div>
 
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'center' }}>
-          {(activeCategory === 'All' 
+          {(activeCategory === 'All'
             ? [...skills.backend, ...skills.frontend, ...skills.tools]
             : skills[activeCategory.toLowerCase()]
-          ).map((skill) => (
-            <span key={skill} style={{
-              padding: '10px 20px',
-              borderRadius: '50px',
-              fontSize: '13px',
-              background: 'rgba(26, 58, 58, 0.08)',
-              color: '#1A3A3A',
-            }}>
+          ).map((skill, i) => (
+            <span
+              key={skill}
+              className="skill-tag"
+              style={{
+                padding: '10px 20px',
+                borderRadius: '50px',
+                fontSize: '13px',
+                background: 'rgba(26, 58, 58, 0.08)',
+                color: '#1A3A3A',
+                cursor: 'default',
+                animationDelay: `${i * 0.03}s`,
+              }}>
               {skill}
             </span>
           ))}
@@ -648,11 +824,12 @@ function Home({ onNavigate }) {
           gap: '16px',
         }}>
           {certifications.map((cert, i) => (
-            <div key={i} style={{
+            <div key={i} className="cert-card" style={{
               padding: '20px',
               borderRadius: '20px',
               background: colors.blue.bg,
               borderLeft: `3px solid ${colors.blue.border}`,
+              animation: `scaleIn 0.4s ease-out ${i * 0.08}s both`,
             }}>
               <p style={{
                 fontSize: '15px',
@@ -703,11 +880,12 @@ function Home({ onNavigate }) {
 
         <a
           href="mailto:aysehilalyalciner@gmail.com"
+          className="cta-btn"
           style={{
             display: 'inline-block',
             padding: '18px 40px',
             borderRadius: '50px',
-            background: '#E07850',
+            background: 'linear-gradient(135deg, #E07850 0%, #D4694A 100%)',
             color: 'white',
             fontSize: '15px',
             textDecoration: 'none',
@@ -724,13 +902,13 @@ function Home({ onNavigate }) {
           marginTop: '40px',
           fontSize: '14px',
         }}>
-          <a href="tel:+19296780598" style={{ color: '#1A3A3A', textDecoration: 'none', opacity: 0.7 }}>
+          <a href="tel:+19296780598" className="contact-link" style={{ color: '#1A3A3A', textDecoration: 'none', opacity: 0.7 }}>
             (929) 678-0598
           </a>
-          <a href="https://linkedin.com/in/ahyalciner" target="_blank" rel="noopener noreferrer" style={{ color: '#1A3A3A', textDecoration: 'none', opacity: 0.7 }}>
+          <a href="https://linkedin.com/in/ahyalciner" className="contact-link" target="_blank" rel="noopener noreferrer" style={{ color: '#1A3A3A', textDecoration: 'none', opacity: 0.7 }}>
             LinkedIn
           </a>
-          <a href="https://github.com/ayshilal" target="_blank" rel="noopener noreferrer" style={{ color: '#1A3A3A', textDecoration: 'none', opacity: 0.7 }}>
+          <a href="https://github.com/ayshilal" className="contact-link" target="_blank" rel="noopener noreferrer" style={{ color: '#1A3A3A', textDecoration: 'none', opacity: 0.7 }}>
             GitHub
           </a>
         </div>
@@ -742,6 +920,27 @@ function Home({ onNavigate }) {
         textAlign: 'center',
         borderTop: '1px solid rgba(26, 58, 58, 0.1)',
       }}>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          gap: '8px',
+          marginBottom: '16px',
+        }}>
+          {['#E07850', '#5B8A72', '#6B8FAD', '#9370A5'].map((color, i) => (
+            <span
+              key={i}
+              className="footer-dot"
+              style={{
+                width: '6px',
+                height: '6px',
+                borderRadius: '50%',
+                background: color,
+                opacity: 0.6,
+                cursor: 'pointer',
+              }}
+            />
+          ))}
+        </div>
         <p style={{
           fontSize: '12px',
           color: '#2D5A5A',
