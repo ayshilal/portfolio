@@ -759,17 +759,18 @@ function Home({ onNavigate }) {
 function Blog({ onNavigate }) {
   const [activeSection, setActiveSection] = useState('key-components');
   const [expandedMenus, setExpandedMenus] = useState(['az-204', 'azure-app-service']);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
-  const toggleMenu = (menu) => {
-    setExpandedMenus(prev => 
-      prev.includes(menu) ? prev.filter(m => m !== menu) : [...prev, menu]
-    );
-  };
-
-  const menuItems = [
+  // Default menu structure
+  const defaultMenuItems = [
     {
       id: 'az-204',
       title: 'AZ-204 Certification',
+      icon: '☁️',
       color: 'terracotta',
       children: [
         {
@@ -778,15 +779,16 @@ function Blog({ onNavigate }) {
           children: [
             { id: 'key-components', title: 'Key Components' },
             { id: 'authentication', title: 'Authentication' },
-            { id: 'inbound-outbound', title: 'Inbound and Outbound Control' },
-            { id: 'deploy', title: 'Deploy' },
+            { id: 'inbound-outbound', title: 'Network Control' },
+            { id: 'deploy', title: 'Deployment' },
           ]
         },
       ]
     },
     {
       id: 'ai-900',
-      title: 'AI-900 AI Fundamentals',
+      title: 'AI-900 Fundamentals',
+      icon: '🤖',
       color: 'purple',
       children: [
         {
@@ -794,7 +796,7 @@ function Blog({ onNavigate }) {
           title: 'AI Concepts',
           children: [
             { id: 'ai-intro', title: 'Introduction to AI' },
-            { id: 'ml-basics', title: 'Machine Learning Basics' },
+            { id: 'ml-basics', title: 'Machine Learning' },
             { id: 'azure-ai-services', title: 'Azure AI Services' },
           ]
         },
@@ -803,6 +805,7 @@ function Blog({ onNavigate }) {
     {
       id: 'angular',
       title: 'Angular',
+      icon: '🅰️',
       color: 'green',
       children: [
         {
@@ -818,9 +821,41 @@ function Blog({ onNavigate }) {
     },
   ];
 
-  const content = {
+  // Load menu items from localStorage
+  const [menuItems, setMenuItems] = useState(() => {
+    try {
+      const saved = localStorage.getItem('blogMenuItems');
+      return saved ? JSON.parse(saved) : defaultMenuItems;
+    } catch {
+      return defaultMenuItems;
+    }
+  });
+
+  const toggleMenu = (menu) => {
+    setExpandedMenus(prev =>
+      prev.includes(menu) ? prev.filter(m => m !== menu) : [...prev, menu]
+    );
+  };
+
+  const handleSectionChange = (sectionId) => {
+    if (editMode && hasUnsavedChanges) {
+      if (!window.confirm('You have unsaved changes. Discard them?')) {
+        return;
+      }
+      setHasUnsavedChanges(false);
+    }
+    setIsAnimating(true);
+    setTimeout(() => {
+      setActiveSection(sectionId);
+      setIsAnimating(false);
+    }, 150);
+  };
+
+  // Default content structure
+  const defaultContent = {
     'key-components': {
       title: 'Key Components',
+      subtitle: 'Azure App Service',
       color: 'terracotta',
       body: `• Scaling up and out
 • Container support
@@ -842,6 +877,7 @@ If you want to scale one app out independently or you need resources in differen
     },
     'authentication': {
       title: 'Authentication',
+      subtitle: 'Azure App Service',
       color: 'terracotta',
       body: `Azure App Service provides built-in authentication and authorization support.
 
@@ -857,7 +893,8 @@ Authentication flow:
 4. Serve authenticated content → Request continues with auth headers`
     },
     'inbound-outbound': {
-      title: 'Inbound and Outbound Control',
+      title: 'Network Control',
+      subtitle: 'Azure App Service',
       color: 'terracotta',
       body: `Inbound Features:
 • App-assigned address
@@ -876,7 +913,8 @@ Network behavior depends on the pricing tier:
 • Isolated: Full network isolation`
     },
     'deploy': {
-      title: 'Deploy',
+      title: 'Deployment',
+      subtitle: 'Azure App Service',
       color: 'terracotta',
       body: `Deployment methods:
 
@@ -901,6 +939,7 @@ Best practices:
     },
     'ai-intro': {
       title: 'Introduction to AI',
+      subtitle: 'AI Concepts',
       color: 'purple',
       body: `What is Artificial Intelligence?
 
@@ -926,7 +965,8 @@ Responsible AI Principles:
 • Accountability`
     },
     'ml-basics': {
-      title: 'Machine Learning Basics',
+      title: 'Machine Learning',
+      subtitle: 'AI Concepts',
       color: 'purple',
       body: `What is Machine Learning?
 
@@ -950,6 +990,7 @@ Azure Machine Learning:
     },
     'azure-ai-services': {
       title: 'Azure AI Services',
+      subtitle: 'AI Concepts',
       color: 'purple',
       body: `Azure AI Services Overview:
 
@@ -981,6 +1022,7 @@ Azure OpenAI Service:
     },
     'angular-components': {
       title: 'Components',
+      subtitle: 'Angular Fundamentals',
       color: 'green',
       body: `Angular Components
 
@@ -1009,6 +1051,7 @@ Lifecycle Hooks:
     },
     'angular-services': {
       title: 'Services & DI',
+      subtitle: 'Angular Fundamentals',
       color: 'green',
       body: `Angular Services & Dependency Injection
 
@@ -1038,6 +1081,7 @@ Injection Tokens:
     },
     'angular-routing': {
       title: 'Routing',
+      subtitle: 'Angular Fundamentals',
       color: 'green',
       body: `Angular Routing
 
@@ -1068,350 +1112,1579 @@ loadChildren: () => import('./feature/feature.module')
     },
   };
 
-  const colors = {
-    orange: { bg: 'rgba(224, 120, 80, 0.1)', border: '#E07850', text: '#E07850' },
-    green: { bg: 'rgba(91, 138, 114, 0.1)', border: '#5B8A72', text: '#5B8A72' },
-    blue: { bg: 'rgba(107, 143, 173, 0.1)', border: '#6B8FAD', text: '#6B8FAD' },
-    purple: { bg: 'rgba(147, 112, 165, 0.1)', border: '#9370A5', text: '#9370A5' },
+  // Load saved content from localStorage or use default
+  const [content, setContent] = useState(() => {
+    try {
+      const saved = localStorage.getItem('blogContent');
+      return saved ? { ...defaultContent, ...JSON.parse(saved) } : defaultContent;
+    } catch {
+      return defaultContent;
+    }
+  });
+
+  // Save content and menu structure to localStorage
+  const saveChanges = () => {
+    try {
+      localStorage.setItem('blogContent', JSON.stringify(content));
+      localStorage.setItem('blogMenuItems', JSON.stringify(menuItems));
+      setHasUnsavedChanges(false);
+      setEditMode(false);
+    } catch (e) {
+      alert('Failed to save changes');
+    }
   };
+
+  // Cancel editing and revert changes
+  const cancelEditing = () => {
+    if (hasUnsavedChanges) {
+      if (!window.confirm('Discard unsaved changes?')) {
+        return;
+      }
+    }
+    try {
+      const savedContent = localStorage.getItem('blogContent');
+      setContent(savedContent ? { ...defaultContent, ...JSON.parse(savedContent) } : defaultContent);
+      const savedMenu = localStorage.getItem('blogMenuItems');
+      setMenuItems(savedMenu ? JSON.parse(savedMenu) : defaultMenuItems);
+    } catch {
+      setContent(defaultContent);
+      setMenuItems(defaultMenuItems);
+    }
+    setHasUnsavedChanges(false);
+    setEditMode(false);
+  };
+
+  // Reset to default content and menu structure
+  const resetToDefault = () => {
+    if (window.confirm('Reset all content and topics to default? This cannot be undone.')) {
+      localStorage.removeItem('blogContent');
+      localStorage.removeItem('blogMenuItems');
+      setContent(defaultContent);
+      setMenuItems(defaultMenuItems);
+      setActiveSection('key-components');
+      setExpandedMenus(['az-204', 'azure-app-service']);
+      setHasUnsavedChanges(false);
+    }
+  };
+
+  // Update content for a section
+  const updateContent = (sectionId, field, value) => {
+    setContent(prev => ({
+      ...prev,
+      [sectionId]: {
+        ...prev[sectionId],
+        [field]: value
+      }
+    }));
+    setHasUnsavedChanges(true);
+  };
+
+  // Generate unique ID
+  const generateId = () => `section-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+  // Add a new subtopic to a main topic
+  const addSubtopic = (topicId) => {
+    const newId = generateId();
+    const newSectionId = generateId();
+    setMenuItems(prev => prev.map(topic => {
+      if (topic.id === topicId) {
+        return {
+          ...topic,
+          children: [...topic.children, {
+            id: newId,
+            title: 'New Subtopic',
+            children: [{ id: newSectionId, title: 'New Section' }]
+          }]
+        };
+      }
+      return topic;
+    }));
+    // Add default content for the new section
+    setContent(prev => ({
+      ...prev,
+      [newSectionId]: {
+        title: 'New Section',
+        subtitle: 'New Subtopic',
+        color: menuItems.find(t => t.id === topicId)?.color || 'green',
+        body: 'Add your content here...'
+      }
+    }));
+    setExpandedMenus(prev => [...prev, topicId, newId]);
+    setHasUnsavedChanges(true);
+  };
+
+  // Add a new section to a subtopic
+  const addSection = (topicId, subtopicId) => {
+    const newId = generateId();
+    const topic = menuItems.find(t => t.id === topicId);
+    const subtopic = topic?.children.find(s => s.id === subtopicId);
+
+    setMenuItems(prev => prev.map(topic => {
+      if (topic.id === topicId) {
+        return {
+          ...topic,
+          children: topic.children.map(sub => {
+            if (sub.id === subtopicId) {
+              return {
+                ...sub,
+                children: [...sub.children, { id: newId, title: 'New Section' }]
+              };
+            }
+            return sub;
+          })
+        };
+      }
+      return topic;
+    }));
+    // Add default content for the new section
+    setContent(prev => ({
+      ...prev,
+      [newId]: {
+        title: 'New Section',
+        subtitle: subtopic?.title || 'Subtopic',
+        color: topic?.color || 'green',
+        body: 'Add your content here...'
+      }
+    }));
+    setHasUnsavedChanges(true);
+  };
+
+  // Delete a section
+  const deleteSection = (topicId, subtopicId, sectionId) => {
+    if (!window.confirm('Delete this section? This cannot be undone.')) return;
+
+    setMenuItems(prev => prev.map(topic => {
+      if (topic.id === topicId) {
+        return {
+          ...topic,
+          children: topic.children.map(sub => {
+            if (sub.id === subtopicId) {
+              return {
+                ...sub,
+                children: sub.children.filter(sec => sec.id !== sectionId)
+              };
+            }
+            return sub;
+          })
+        };
+      }
+      return topic;
+    }));
+    // Remove content for the deleted section
+    setContent(prev => {
+      const newContent = { ...prev };
+      delete newContent[sectionId];
+      return newContent;
+    });
+    // If we deleted the active section, switch to another
+    if (activeSection === sectionId) {
+      const allSections = menuItems.flatMap(t => t.children.flatMap(s => s.children));
+      const otherSection = allSections.find(s => s.id !== sectionId);
+      if (otherSection) setActiveSection(otherSection.id);
+    }
+    setHasUnsavedChanges(true);
+  };
+
+  // Delete a subtopic
+  const deleteSubtopic = (topicId, subtopicId) => {
+    if (!window.confirm('Delete this subtopic and all its sections? This cannot be undone.')) return;
+
+    const topic = menuItems.find(t => t.id === topicId);
+    const subtopic = topic?.children.find(s => s.id === subtopicId);
+    const sectionIds = subtopic?.children.map(s => s.id) || [];
+
+    setMenuItems(prev => prev.map(topic => {
+      if (topic.id === topicId) {
+        return {
+          ...topic,
+          children: topic.children.filter(sub => sub.id !== subtopicId)
+        };
+      }
+      return topic;
+    }));
+    // Remove content for all sections in the subtopic
+    setContent(prev => {
+      const newContent = { ...prev };
+      sectionIds.forEach(id => delete newContent[id]);
+      return newContent;
+    });
+    // If we deleted the active section, switch to another
+    if (sectionIds.includes(activeSection)) {
+      const allSections = menuItems.flatMap(t => t.children.flatMap(s => s.children));
+      const otherSection = allSections.find(s => !sectionIds.includes(s.id));
+      if (otherSection) setActiveSection(otherSection.id);
+    }
+    setHasUnsavedChanges(true);
+  };
+
+  // Rename a subtopic
+  const renameSubtopic = (topicId, subtopicId, newTitle) => {
+    setMenuItems(prev => prev.map(topic => {
+      if (topic.id === topicId) {
+        return {
+          ...topic,
+          children: topic.children.map(sub => {
+            if (sub.id === subtopicId) {
+              return { ...sub, title: newTitle };
+            }
+            return sub;
+          })
+        };
+      }
+      return topic;
+    }));
+    setHasUnsavedChanges(true);
+  };
+
+  // Rename a section in the menu
+  const renameSection = (topicId, subtopicId, sectionId, newTitle) => {
+    setMenuItems(prev => prev.map(topic => {
+      if (topic.id === topicId) {
+        return {
+          ...topic,
+          children: topic.children.map(sub => {
+            if (sub.id === subtopicId) {
+              return {
+                ...sub,
+                children: sub.children.map(sec => {
+                  if (sec.id === sectionId) {
+                    return { ...sec, title: newTitle };
+                  }
+                  return sec;
+                })
+              };
+            }
+            return sub;
+          })
+        };
+      }
+      return topic;
+    }));
+    setHasUnsavedChanges(true);
+  };
+
+  const colors = {
+    terracotta: { bg: 'rgba(176, 113, 113, 0.1)', border: '#B07171', text: '#B07171', light: 'rgba(176, 113, 113, 0.25)', gradient: 'linear-gradient(135deg, #B07171 0%, #A06161 100%)' },
+    orange: { bg: 'rgba(224, 120, 80, 0.1)', border: '#E07850', text: '#E07850', light: 'rgba(224, 120, 80, 0.25)', gradient: 'linear-gradient(135deg, #E07850 0%, #D4694A 100%)' },
+    green: { bg: 'rgba(91, 138, 114, 0.1)', border: '#5B8A72', text: '#5B8A72', light: 'rgba(91, 138, 114, 0.25)', gradient: 'linear-gradient(135deg, #5B8A72 0%, #4A7A62 100%)' },
+    blue: { bg: 'rgba(107, 143, 173, 0.1)', border: '#6B8FAD', text: '#6B8FAD', light: 'rgba(107, 143, 173, 0.25)', gradient: 'linear-gradient(135deg, #6B8FAD 0%, #5A7F9D 100%)' },
+    purple: { bg: 'rgba(147, 112, 165, 0.1)', border: '#9370A5', text: '#9370A5', light: 'rgba(147, 112, 165, 0.25)', gradient: 'linear-gradient(135deg, #9370A5 0%, #836095 100%)' },
+  };
+
+  // Filter content based on search
+  const filteredSections = Object.entries(content).filter(([key, value]) =>
+    searchQuery === '' ||
+    value.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    value.body.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // Get current topic color
+  const currentColor = content[activeSection]?.color || 'green';
+
+  // Calculate progress for each topic
+  const getTopicProgress = (topicId) => {
+    const topic = menuItems.find(t => t.id === topicId);
+    if (!topic) return 0;
+    let total = 0;
+    let completed = 0;
+    topic.children.forEach(sub => {
+      sub.children.forEach(section => {
+        total++;
+        if (section.id === activeSection) completed++;
+      });
+    });
+    return Math.round((completed / total) * 100);
+  };
+
+  const blogStyles = `
+    @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(-10px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-6px); }
+    }
+
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    @keyframes glow {
+      0%, 100% { box-shadow: 0 0 5px rgba(176, 113, 113, 0.3); }
+      50% { box-shadow: 0 0 20px rgba(176, 113, 113, 0.5); }
+    }
+
+    @keyframes bounceIn {
+      0% { opacity: 0; transform: scale(0.3); }
+      50% { transform: scale(1.05); }
+      70% { transform: scale(0.9); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes staggerFade {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes ripple {
+      0% { transform: scale(0); opacity: 1; }
+      100% { transform: scale(4); opacity: 0; }
+    }
+
+    @keyframes gradient {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .blog-sidebar::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .blog-sidebar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .blog-sidebar::-webkit-scrollbar-thumb {
+      background: rgba(26, 58, 58, 0.2);
+      border-radius: 3px;
+    }
+
+    .blog-sidebar::-webkit-scrollbar-thumb:hover {
+      background: rgba(26, 58, 58, 0.3);
+    }
+
+    .menu-item {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .menu-item:hover {
+      transform: translateX(4px);
+    }
+
+    .content-card {
+      animation: slideUp 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .topic-card {
+      animation: slideUp 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      animation-fill-mode: both;
+    }
+
+    .topic-card:nth-child(1) { animation-delay: 0.1s; }
+    .topic-card:nth-child(2) { animation-delay: 0.2s; }
+    .topic-card:nth-child(3) { animation-delay: 0.3s; }
+
+    .quick-btn {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .quick-btn:hover {
+      transform: translateY(-3px) scale(1.02);
+    }
+
+    .quick-btn:active {
+      transform: translateY(0) scale(0.98);
+    }
+
+    .nav-btn {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .nav-btn::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 5px;
+      height: 5px;
+      background: rgba(255, 255, 255, 0.5);
+      opacity: 0;
+      border-radius: 100%;
+      transform: scale(1, 1) translate(-50%);
+      transform-origin: 50% 50%;
+    }
+
+    .nav-btn:hover::after {
+      animation: ripple 0.6s ease-out;
+    }
+
+    .floating-icon {
+      animation: float 3s ease-in-out infinite;
+    }
+
+    .checklist-item {
+      animation: staggerFade 0.4s ease-out both;
+    }
+
+    .checklist-item:nth-child(1) { animation-delay: 0.1s; }
+    .checklist-item:nth-child(2) { animation-delay: 0.2s; }
+    .checklist-item:nth-child(3) { animation-delay: 0.3s; }
+    .checklist-item:nth-child(4) { animation-delay: 0.4s; }
+
+    .search-input:focus {
+      animation: glow 2s ease-in-out infinite;
+    }
+
+    .breadcrumb-item {
+      animation: slideIn 0.3s ease-out both;
+    }
+
+    .breadcrumb-item:nth-child(1) { animation-delay: 0s; }
+    .breadcrumb-item:nth-child(2) { animation-delay: 0.05s; }
+    .breadcrumb-item:nth-child(3) { animation-delay: 0.1s; }
+    .breadcrumb-item:nth-child(4) { animation-delay: 0.15s; }
+    .breadcrumb-item:nth-child(5) { animation-delay: 0.2s; }
+
+    .header-gradient {
+      background-size: 200% 200%;
+      animation: gradient 8s ease infinite;
+    }
+
+    .decorative-circle {
+      animation: float 4s ease-in-out infinite;
+    }
+
+    .decorative-circle:nth-child(2) {
+      animation-delay: -2s;
+    }
+
+    @media (max-width: 768px) {
+      .blog-sidebar {
+        position: fixed !important;
+        left: 0;
+        top: 64px !important;
+        height: calc(100vh - 64px) !important;
+        z-index: 50;
+        transform: translateX(-100%);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 4px 0 20px rgba(0,0,0,0.1);
+      }
+
+      .blog-sidebar.open {
+        transform: translateX(0);
+      }
+
+      .blog-main {
+        margin-left: 0 !important;
+        padding: 20px !important;
+      }
+    }
+  `;
 
   return (
     <div style={{
       minHeight: '100vh',
-      background: '#FDF6F0',
+      background: 'linear-gradient(180deg, #FDF6F0 0%, #F8F0E8 100%)',
       color: '#1A3A3A',
       fontFamily: '"Nunito", "Inter", sans-serif',
     }}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600&display=swap');`}</style>
+      <style>{blogStyles}</style>
+
       {/* Navigation */}
       <nav style={{
         position: 'fixed',
         top: 0,
         left: 0,
         right: 0,
-        padding: '20px clamp(16px, 4vw, 32px)',
+        padding: '0 clamp(16px, 4vw, 32px)',
+        height: '64px',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
         zIndex: 100,
-        background: '#B07171',
-        backdropFilter: 'blur(10px)',
-        gap: '24px',
+        background: 'rgba(253, 246, 240, 0.95)',
+        backdropFilter: 'blur(20px)',
+        borderBottom: '1px solid rgba(26, 58, 58, 0.08)',
+        boxShadow: '0 1px 20px rgba(0,0,0,0.03)',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <span
+        {/* Left side - Menu toggle and logo */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
             style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              padding: '8px',
+              borderRadius: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'background 0.2s',
+            }}
+            onMouseEnter={(e) => e.target.style.background = 'rgba(26, 58, 58, 0.05)'}
+            onMouseLeave={(e) => e.target.style.background = 'none'}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1A3A3A" strokeWidth="2">
+              <path d="M3 12h18M3 6h18M3 18h18" strokeLinecap="round"/>
+            </svg>
+          </button>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div
+              className="floating-icon"
+              style={{
+                width: '32px',
+                height: '32px',
+                borderRadius: '10px',
+                background: colors[currentColor].gradient,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '16px',
+                boxShadow: `0 4px 12px ${colors[currentColor].light}`,
+              }}>
+              📚
+            </div>
+            <span style={{
               fontFamily: '"Cormorant Garamond", serif',
-              fontSize: 'clamp(18px, 4vw, 24px)',
-              fontWeight: 300,
-              letterSpacing: 'clamp(2px, 0.5vw, 4px)',
-              color: '#FDF6F0',
+              fontSize: '20px',
+              fontWeight: 500,
+              letterSpacing: '1px',
+              color: '#1A3A3A',
+            }}>
+              Study Notes
+            </span>
+          </div>
+        </div>
+
+        {/* Center - Search */}
+        <div style={{
+          flex: 1,
+          maxWidth: '400px',
+          margin: '0 24px',
+          display: 'flex',
+        }}>
+          <div style={{
+            position: 'relative',
+            width: '100%',
+          }}>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#1A3A3A"
+              strokeWidth="2"
+              style={{
+                position: 'absolute',
+                left: '12px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                opacity: 0.4,
+              }}
+            >
+              <circle cx="11" cy="11" r="8"/>
+              <path d="M21 21l-4.35-4.35"/>
+            </svg>
+            <input
+              type="text"
+              placeholder="Search notes..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="search-input"
+              style={{
+                width: '100%',
+                padding: '10px 16px 10px 40px',
+                borderRadius: '12px',
+                border: '1px solid rgba(26, 58, 58, 0.1)',
+                background: 'rgba(26, 58, 58, 0.03)',
+                fontSize: '14px',
+                fontFamily: '"Nunito", sans-serif',
+                color: '#1A3A3A',
+                outline: 'none',
+                transition: 'all 0.2s',
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = colors[currentColor].border;
+                e.target.style.background = 'white';
+                e.target.style.boxShadow = `0 0 0 3px ${colors[currentColor].light}`;
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = 'rgba(26, 58, 58, 0.1)';
+                e.target.style.background = 'rgba(26, 58, 58, 0.03)';
+                e.target.style.boxShadow = 'none';
+              }}
+            />
+          </div>
+        </div>
+
+        {/* Right side - Edit toggle and Back to portfolio */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          {editMode ? (
+            <>
+              <button
+                onClick={saveChanges}
+                style={{
+                  background: colors.green.gradient,
+                  border: 'none',
+                  color: 'white',
+                  padding: '8px 16px',
+                  borderRadius: '10px',
+                  cursor: 'pointer',
+                  fontSize: '13px',
+                  fontFamily: '"Nunito", sans-serif',
+                  fontWeight: 600,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  transition: 'all 0.2s',
+                  boxShadow: hasUnsavedChanges ? '0 0 10px rgba(91, 138, 114, 0.5)' : 'none',
+                }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" strokeLinecap="round" strokeLinejoin="round"/>
+                  <polyline points="17 21 17 13 7 13 7 21" strokeLinecap="round" strokeLinejoin="round"/>
+                  <polyline points="7 3 7 8 15 8" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                Save
+              </button>
+              <button
+                onClick={cancelEditing}
+                style={{
+                  background: 'none',
+                  border: '1px solid rgba(26, 58, 58, 0.2)',
+                  color: '#1A3A3A',
+                  padding: '8px 16px',
+                  borderRadius: '10px',
+                  cursor: 'pointer',
+                  fontSize: '13px',
+                  fontFamily: '"Nunito", sans-serif',
+                  fontWeight: 500,
+                  transition: 'all 0.2s',
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={resetToDefault}
+                style={{
+                  background: 'none',
+                  border: '1px solid rgba(176, 113, 113, 0.3)',
+                  color: '#B07171',
+                  padding: '8px 12px',
+                  borderRadius: '10px',
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                  fontFamily: '"Nunito", sans-serif',
+                  fontWeight: 500,
+                  transition: 'all 0.2s',
+                }}
+                title="Reset to default content"
+              >
+                Reset
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={() => setEditMode(true)}
+              style={{
+                background: 'none',
+                border: '1px solid rgba(26, 58, 58, 0.15)',
+                color: '#1A3A3A',
+                padding: '8px 16px',
+                borderRadius: '10px',
+                cursor: 'pointer',
+                fontSize: '13px',
+                fontFamily: '"Nunito", sans-serif',
+                fontWeight: 500,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                transition: 'all 0.2s',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(26, 58, 58, 0.05)';
+                e.currentTarget.style.borderColor = 'rgba(26, 58, 58, 0.25)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'none';
+                e.currentTarget.style.borderColor = 'rgba(26, 58, 58, 0.15)';
+              }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              Edit
+            </button>
+          )}
+          <button
+            onClick={() => onNavigate && onNavigate('home')}
+            style={{
+              background: 'none',
+              border: '1px solid rgba(26, 58, 58, 0.15)',
+              color: '#1A3A3A',
+              padding: '8px 16px',
+              borderRadius: '10px',
+              cursor: 'pointer',
+              fontSize: '13px',
+              fontFamily: '"Nunito", sans-serif',
+              fontWeight: 500,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              transition: 'all 0.2s',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(26, 58, 58, 0.05)';
+              e.currentTarget.style.borderColor = 'rgba(26, 58, 58, 0.25)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'none';
+              e.currentTarget.style.borderColor = 'rgba(26, 58, 58, 0.15)';
             }}
           >
-            AYSE'S NOTES
-          </span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M19 12H5M12 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            Portfolio
+          </button>
         </div>
-        <button
-          onClick={() => onNavigate && onNavigate('home')}
-          style={{
-            background: 'rgba(253, 246, 240, 0.2)',
-            border: 'none',
-            color: '#FDF6F0',
-            padding: '8px 16px',
-            borderRadius: '20px',
-            cursor: 'pointer',
-            fontSize: '13px',
-            fontFamily: '"Nunito", sans-serif',
-          }}
-        >
-          ← Portfolio
-        </button>
       </nav>
+
+      {/* Edit Mode Banner */}
+      {editMode && (
+        <div style={{
+          position: 'fixed',
+          top: '64px',
+          left: 0,
+          right: 0,
+          background: hasUnsavedChanges ? 'linear-gradient(135deg, #E07850 0%, #D4694A 100%)' : 'linear-gradient(135deg, #5B8A72 0%, #4A7A62 100%)',
+          color: 'white',
+          padding: '8px 20px',
+          fontSize: '13px',
+          fontWeight: 500,
+          textAlign: 'center',
+          zIndex: 99,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '8px',
+          animation: 'slideUp 0.3s ease-out',
+        }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          {hasUnsavedChanges ? 'Edit Mode - You have unsaved changes' : 'Edit Mode - Click on title or content to edit'}
+        </div>
+      )}
 
       {/* Main Content with Sidebar */}
       <div style={{
         display: 'flex',
-        paddingTop: '80px',
+        paddingTop: editMode ? '100px' : '64px',
         minHeight: '100vh',
+        transition: 'padding-top 0.3s ease',
       }}>
         {/* Sidebar */}
-        <aside style={{
-          width: '280px',
-          minWidth: '280px',
-          background: 'rgba(26, 58, 58, 0.03)',
-          borderRight: '1px solid rgba(26, 58, 58, 0.1)',
-          padding: '24px 0',
-          position: 'sticky',
-          top: '80px',
-          height: 'calc(100vh - 80px)',
-          overflowY: 'auto',
-        }}>
-          {/* Colorful dots decoration - clickable */}
-          <div style={{ 
-            display: 'flex', 
-            gap: '6px', 
-            padding: '0 16px', 
-            marginBottom: '20px' 
-          }}>
-            <button 
-              onClick={() => {
-                setExpandedMenus(prev => prev.includes('az-204') ? prev : [...prev, 'az-204', 'azure-app-service']);
-                setActiveSection('key-components');
-              }}
-              style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#B07171', border: 'none', cursor: 'pointer', padding: 0 }} 
-              title="AZ-204 Certification"
-            />
-            <button 
-              onClick={() => {
-                setExpandedMenus(prev => prev.includes('ai-900') ? prev : [...prev, 'ai-900', 'ai-concepts']);
-                setActiveSection('ai-intro');
-              }}
-              style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#9370A5', border: 'none', cursor: 'pointer', padding: 0 }} 
-              title="AI-900 AI Fundamentals"
-            />
-            <button 
-              onClick={() => {
-                setExpandedMenus(prev => prev.includes('angular') ? prev : [...prev, 'angular', 'angular-fundamentals']);
-                setActiveSection('angular-components');
-              }}
-              style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#5B8A72', border: 'none', cursor: 'pointer', padding: 0 }} 
-              title="Angular"
-            />
-          </div>
-          
-          {menuItems.map((topic) => (
-            <div key={topic.id} style={{ marginBottom: '16px' }}>
-              {/* Topic Header (e.g., AZ-204) */}
-              <button
-                onClick={() => toggleMenu(topic.id)}
-                style={{
-                  width: 'calc(100% - 24px)',
-                  margin: '0 12px',
-                  padding: '12px 16px',
-                  background: colors[topic.color]?.border || '#E07850',
-                  borderRadius: '12px',
-                  border: 'none',
-                  textAlign: 'left',
-                  cursor: 'pointer',
-                  fontSize: '15px',
-                  fontWeight: 500,
-                  color: '#FDF6F0',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '10px',
-                  transition: 'all 0.2s',
-                }}
-              >
-                <span style={{ 
-                  transform: expandedMenus.includes(topic.id) ? 'rotate(90deg)' : 'rotate(0deg)',
-                  transition: 'transform 0.2s',
-                  fontSize: '10px',
-                  color: '#FDF6F0',
-                }}>▶</span>
-                {topic.title}
-              </button>
-              
-              {/* Subtopics (e.g., Azure App Service) */}
-              {expandedMenus.includes(topic.id) && topic.children.map((subtopic) => (
-                <div key={subtopic.id} style={{ marginLeft: '12px' }}>
+        <aside
+          className={`blog-sidebar ${sidebarOpen ? 'open' : ''}`}
+          style={{
+            width: sidebarOpen ? '280px' : '0',
+            minWidth: sidebarOpen ? '280px' : '0',
+            background: 'rgba(255, 255, 255, 0.7)',
+            borderRight: sidebarOpen ? '1px solid rgba(26, 58, 58, 0.08)' : 'none',
+            padding: sidebarOpen ? '24px 0' : '0',
+            position: 'sticky',
+            top: editMode ? '100px' : '64px',
+            height: editMode ? 'calc(100vh - 100px)' : 'calc(100vh - 64px)',
+            overflowY: 'auto',
+            overflowX: 'hidden',
+            transition: 'all 0.3s ease',
+          }}
+        >
+          {sidebarOpen && (
+            <>
+              {/* Topic Quick Access */}
+              <div style={{
+                display: 'flex',
+                gap: '8px',
+                padding: '0 16px',
+                marginBottom: '24px',
+              }}>
+                {menuItems.map((topic) => (
                   <button
-                    onClick={() => toggleMenu(subtopic.id)}
+                    key={topic.id}
+                    className="quick-btn"
+                    onClick={() => {
+                      const firstSection = topic.children[0]?.children[0]?.id;
+                      if (firstSection) {
+                        setExpandedMenus([topic.id, topic.children[0].id]);
+                        handleSectionChange(firstSection);
+                      }
+                    }}
                     style={{
-                      width: '100%',
-                      padding: '8px 16px',
-                      background: 'none',
+                      flex: 1,
+                      padding: '12px 8px',
+                      borderRadius: '12px',
+                      background: expandedMenus.includes(topic.id) ? colors[topic.color].light : 'rgba(26, 58, 58, 0.04)',
+                      border: expandedMenus.includes(topic.id) ? `1px solid ${colors[topic.color].border}` : '1px solid transparent',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: '4px',
+                    }}
+                    title={topic.title}
+                  >
+                    <span style={{ fontSize: '18px' }}>{topic.icon}</span>
+                    <span style={{
+                      fontSize: '9px',
+                      fontWeight: 600,
+                      color: expandedMenus.includes(topic.id) ? colors[topic.color].text : '#1A3A3A',
+                      opacity: 0.8,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px',
+                    }}>
+                      {topic.id.split('-')[0]}
+                    </span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Divider */}
+              <div style={{
+                height: '1px',
+                background: 'rgba(26, 58, 58, 0.08)',
+                margin: '0 16px 16px',
+              }} />
+
+              {/* Menu Items */}
+              {menuItems.map((topic) => (
+                <div key={topic.id} style={{ marginBottom: '8px' }}>
+                  {/* Topic Header */}
+                  <button
+                    onClick={() => toggleMenu(topic.id)}
+                    className="menu-item"
+                    style={{
+                      width: 'calc(100% - 24px)',
+                      margin: '0 12px',
+                      padding: '14px 16px',
+                      background: expandedMenus.includes(topic.id) ? colors[topic.color].gradient : 'transparent',
+                      borderRadius: '14px',
                       border: 'none',
                       textAlign: 'left',
                       cursor: 'pointer',
                       fontSize: '14px',
-                      fontWeight: 500,
-                      color: '#1A3A3A',
+                      fontWeight: 600,
+                      color: expandedMenus.includes(topic.id) ? '#FDF6F0' : '#1A3A3A',
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '8px',
+                      gap: '12px',
+                      transition: 'all 0.2s',
+                      boxShadow: expandedMenus.includes(topic.id) ? `0 4px 16px ${colors[topic.color].light}` : 'none',
                     }}
                   >
-                    <span style={{ 
-                      transform: expandedMenus.includes(subtopic.id) ? 'rotate(90deg)' : 'rotate(0deg)',
-                      transition: 'transform 0.2s',
-                      fontSize: '8px',
-                      color: colors[topic.color]?.text,
-                    }}>▶</span>
-                    {subtopic.title}
+                    <span style={{ fontSize: '16px' }}>{topic.icon}</span>
+                    <span style={{ flex: 1 }}>{topic.title}</span>
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      style={{
+                        transform: expandedMenus.includes(topic.id) ? 'rotate(90deg)' : 'rotate(0deg)',
+                        transition: 'transform 0.2s',
+                        opacity: 0.6,
+                      }}
+                    >
+                      <path d="M9 18l6-6-6-6" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
                   </button>
-                  
-                  {/* Sections (e.g., Key Components) */}
-                  {expandedMenus.includes(subtopic.id) && (
-                    <div style={{ marginLeft: '16px' }}>
-                      {subtopic.children.map((section) => {
-                        const topicColor = topic.color;
-                        return (
-                          <button
-                            key={section.id}
-                            onClick={() => setActiveSection(section.id)}
-                            style={{
-                              width: '100%',
-                              padding: '6px 16px',
-                              background: activeSection === section.id ? colors[topicColor]?.bg : 'none',
-                              border: 'none',
-                              borderLeft: activeSection === section.id ? `2px solid ${colors[topicColor]?.border}` : '2px solid transparent',
-                              textAlign: 'left',
-                              cursor: 'pointer',
-                              fontSize: '13px',
-                              color: activeSection === section.id ? colors[topicColor]?.text : '#1A3A3A',
-                              transition: 'all 0.2s',
-                              fontWeight: activeSection === section.id ? 600 : 400,
-                            }}
-                          >
-                            {section.title}
-                          </button>
-                        );
-                      })}
+
+                  {/* Subtopics */}
+                  {expandedMenus.includes(topic.id) && (
+                    <div style={{
+                      marginTop: '8px',
+                      animation: 'slideIn 0.2s ease-out',
+                    }}>
+                      {topic.children.map((subtopic) => (
+                        <div key={subtopic.id}>
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                          }}>
+                            <button
+                              onClick={() => toggleMenu(subtopic.id)}
+                              style={{
+                                flex: 1,
+                                padding: '10px 16px 10px 44px',
+                                background: 'none',
+                                border: 'none',
+                                textAlign: 'left',
+                                cursor: 'pointer',
+                                fontSize: '13px',
+                                fontWeight: 500,
+                                color: '#1A3A3A',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                opacity: 0.8,
+                                transition: 'all 0.2s',
+                              }}
+                            >
+                              <span style={{
+                                width: '6px',
+                                height: '6px',
+                                borderRadius: '50%',
+                                background: colors[topic.color].border,
+                                opacity: 0.5,
+                              }} />
+                              {editMode ? (
+                                <input
+                                  type="text"
+                                  value={subtopic.title}
+                                  onChange={(e) => renameSubtopic(topic.id, subtopic.id, e.target.value)}
+                                  onClick={(e) => e.stopPropagation()}
+                                  style={{
+                                    flex: 1,
+                                    background: 'rgba(26, 58, 58, 0.05)',
+                                    border: '1px dashed rgba(26, 58, 58, 0.2)',
+                                    borderRadius: '4px',
+                                    padding: '2px 6px',
+                                    fontSize: '13px',
+                                    fontWeight: 500,
+                                    color: '#1A3A3A',
+                                    outline: 'none',
+                                  }}
+                                />
+                              ) : (
+                                <span style={{ flex: 1 }}>{subtopic.title}</span>
+                              )}
+                              <svg
+                                width="10"
+                                height="10"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke={colors[topic.color].text}
+                                strokeWidth="2"
+                                style={{
+                                  transform: expandedMenus.includes(subtopic.id) ? 'rotate(90deg)' : 'rotate(0deg)',
+                                  transition: 'transform 0.2s',
+                                }}
+                              >
+                                <path d="M9 18l6-6-6-6" strokeLinecap="round" strokeLinejoin="round"/>
+                              </svg>
+                            </button>
+                            {editMode && (
+                              <button
+                                onClick={() => deleteSubtopic(topic.id, subtopic.id)}
+                                style={{
+                                  background: 'none',
+                                  border: 'none',
+                                  cursor: 'pointer',
+                                  padding: '4px',
+                                  opacity: 0.5,
+                                  transition: 'opacity 0.2s',
+                                }}
+                                onMouseEnter={(e) => e.currentTarget.style.opacity = 1}
+                                onMouseLeave={(e) => e.currentTarget.style.opacity = 0.5}
+                                title="Delete subtopic"
+                              >
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#B07171" strokeWidth="2">
+                                  <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" strokeLinecap="round" strokeLinejoin="round"/>
+                                </svg>
+                              </button>
+                            )}
+                          </div>
+
+                          {/* Sections */}
+                          {expandedMenus.includes(subtopic.id) && (
+                            <div style={{
+                              marginLeft: '44px',
+                              borderLeft: `2px solid ${colors[topic.color].light}`,
+                              animation: 'slideIn 0.2s ease-out',
+                            }}>
+                              {subtopic.children.map((section) => (
+                                <div
+                                  key={section.id}
+                                  style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '4px',
+                                  }}
+                                >
+                                  <button
+                                    onClick={() => handleSectionChange(section.id)}
+                                    style={{
+                                      flex: 1,
+                                      padding: '8px 16px',
+                                      background: activeSection === section.id ? colors[topic.color].bg : 'none',
+                                      border: 'none',
+                                      textAlign: 'left',
+                                      cursor: 'pointer',
+                                      fontSize: '13px',
+                                      color: activeSection === section.id ? colors[topic.color].text : '#1A3A3A',
+                                      transition: 'all 0.2s',
+                                      fontWeight: activeSection === section.id ? 600 : 400,
+                                      borderRadius: '0 8px 8px 0',
+                                      marginLeft: '-2px',
+                                      borderLeft: activeSection === section.id ? `2px solid ${colors[topic.color].border}` : '2px solid transparent',
+                                    }}
+                                  >
+                                    {section.title}
+                                  </button>
+                                  {editMode && (
+                                    <button
+                                      onClick={() => deleteSection(topic.id, subtopic.id, section.id)}
+                                      style={{
+                                        background: 'none',
+                                        border: 'none',
+                                        cursor: 'pointer',
+                                        padding: '4px',
+                                        opacity: 0.4,
+                                        transition: 'opacity 0.2s',
+                                        marginRight: '8px',
+                                      }}
+                                      onMouseEnter={(e) => e.currentTarget.style.opacity = 1}
+                                      onMouseLeave={(e) => e.currentTarget.style.opacity = 0.4}
+                                      title="Delete section"
+                                    >
+                                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#B07171" strokeWidth="2">
+                                        <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" strokeLinejoin="round"/>
+                                      </svg>
+                                    </button>
+                                  )}
+                                </div>
+                              ))}
+                              {/* Add section button */}
+                              {editMode && (
+                                <button
+                                  onClick={() => addSection(topic.id, subtopic.id)}
+                                  style={{
+                                    width: '100%',
+                                    padding: '8px 16px',
+                                    background: 'none',
+                                    border: '1px dashed rgba(26, 58, 58, 0.2)',
+                                    borderRadius: '8px',
+                                    cursor: 'pointer',
+                                    fontSize: '12px',
+                                    color: colors[topic.color].text,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '6px',
+                                    marginTop: '4px',
+                                    marginLeft: '-2px',
+                                    opacity: 0.7,
+                                    transition: 'all 0.2s',
+                                  }}
+                                  onMouseEnter={(e) => {
+                                    e.currentTarget.style.opacity = 1;
+                                    e.currentTarget.style.background = colors[topic.color].bg;
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    e.currentTarget.style.opacity = 0.7;
+                                    e.currentTarget.style.background = 'none';
+                                  }}
+                                >
+                                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M12 5v14M5 12h14" strokeLinecap="round" strokeLinejoin="round"/>
+                                  </svg>
+                                  Add Section
+                                </button>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                      {/* Add subtopic button */}
+                      {editMode && (
+                        <button
+                          onClick={() => addSubtopic(topic.id)}
+                          style={{
+                            width: 'calc(100% - 24px)',
+                            margin: '8px 12px 0',
+                            padding: '10px 16px',
+                            background: 'none',
+                            border: '1px dashed rgba(26, 58, 58, 0.2)',
+                            borderRadius: '10px',
+                            cursor: 'pointer',
+                            fontSize: '12px',
+                            color: colors[topic.color].text,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '6px',
+                            opacity: 0.7,
+                            transition: 'all 0.2s',
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.opacity = 1;
+                            e.currentTarget.style.background = colors[topic.color].bg;
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.opacity = 0.7;
+                            e.currentTarget.style.background = 'none';
+                          }}
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M12 5v14M5 12h14" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                          Add Subtopic
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>
               ))}
-            </div>
-          ))}
+
+              {/* Study Progress Card */}
+              <div style={{
+                margin: '24px 12px 0',
+                padding: '16px',
+                background: 'linear-gradient(135deg, rgba(26, 58, 58, 0.04) 0%, rgba(26, 58, 58, 0.08) 100%)',
+                borderRadius: '16px',
+                border: '1px solid rgba(26, 58, 58, 0.06)',
+              }}>
+                <div style={{
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  color: '#1A3A3A',
+                  opacity: 0.5,
+                  textTransform: 'uppercase',
+                  letterSpacing: '1px',
+                  marginBottom: '12px',
+                }}>
+                  Study Checklist
+                </div>
+                {[
+                  { text: 'Watch videos', done: true },
+                  { text: 'Take notes', done: true },
+                  { text: 'Practice labs', done: false },
+                  { text: 'Mock exams', done: false },
+                ].map((item, i) => (
+                  <div key={i} className="checklist-item" style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                    marginBottom: '8px',
+                  }}>
+                    <div style={{
+                      width: '18px',
+                      height: '18px',
+                      borderRadius: '6px',
+                      border: item.done ? 'none' : '2px solid rgba(26, 58, 58, 0.2)',
+                      background: item.done ? colors.green.border : 'none',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}>
+                      {item.done && (
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
+                          <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      )}
+                    </div>
+                    <span style={{
+                      fontSize: '13px',
+                      color: '#1A3A3A',
+                      opacity: item.done ? 0.5 : 0.8,
+                      textDecoration: item.done ? 'line-through' : 'none',
+                    }}>
+                      {item.text}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
         </aside>
 
         {/* Content Area */}
-        <main style={{
-          flex: 1,
-          padding: '40px',
-          maxWidth: '900px',
-          display: 'flex',
-          gap: '20px',
-          alignItems: 'flex-start',
-        }}>
-          <div style={{
+        <main
+          className="blog-main"
+          style={{
             flex: 1,
-            padding: '24px',
-            borderRadius: '20px',
-            background: colors[content[activeSection]?.color]?.bg || colors.green.bg,
-            borderLeft: `3px solid ${colors[content[activeSection]?.color]?.border || colors.green.border}`,
+            padding: '32px 48px',
+            maxWidth: '900px',
+            marginLeft: sidebarOpen ? '0' : '0',
+            transition: 'margin 0.3s ease',
+          }}
+        >
+          {/* Breadcrumb */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            marginBottom: '24px',
+            fontSize: '13px',
+            color: '#1A3A3A',
+            opacity: 0.6,
           }}>
-            <h1 style={{
-              fontFamily: '"Nunito", sans-serif',
-              fontSize: '20px',
-              fontWeight: 600,
-              marginBottom: '20px',
-              color: colors[content[activeSection]?.color]?.text || '#1A3A3A',
-              background: 'rgba(26, 58, 58, 0.05)',
-              margin: '-24px -24px 20px -24px',
-              padding: '18px 24px',
-              borderRadius: '17px 17px 0 0',
-              letterSpacing: '0.5px',
-            }}>
-              {content[activeSection]?.title}
-            </h1>
-            
-            <pre style={{
-              fontSize: '15px',
-              color: '#1A3A3A',
-              lineHeight: 1.9,
-              whiteSpace: 'pre-wrap',
-              fontFamily: '"Nunito", sans-serif',
-              fontWeight: 400,
-              margin: 0,
-              opacity: 0.85,
-            }}>
-              {content[activeSection]?.body}
-            </pre>
-          </div>
-          
-          {/* To-do list note - responsive */}
-          <div style={{ 
-            display: 'flex', 
-            flexDirection: 'column', 
-            gap: '15px',
-            paddingTop: '10px',
-            flexShrink: 0,
-          }}>
-            <svg 
-              viewBox="0 0 130 155" 
-              style={{ 
-                width: 'clamp(90px, 14vw, 130px)', 
-                height: 'auto',
-              }}
-            >
-              {/* Note paper */}
-              <rect x="8" y="10" width="114" height="140" fill="#FFFDE7" stroke="#E0D9C8" strokeWidth="2" rx="2" transform="rotate(-1 65 80)"/>
-              {/* Pin on paper */}
-              <circle cx="65" cy="22" r="7" fill="#B07171"/>
-              <ellipse cx="65" cy="22" rx="4" ry="3" fill="#C88585"/>
-              {/* Title */}
-              <text x="16" y="45" fontSize="12" fontWeight="600" fill="#1A3A3A" fontFamily="Nunito, sans-serif">To Do</text>
-              
-              {/* Item 1 - Youtube videos (checked) */}
-              <rect x="16" y="53" width="11" height="11" fill="none" stroke="#5B8A72" strokeWidth="2" rx="2"/>
-              <path d="M19 58 L22 61 L25 55" stroke="#5B8A72" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
-              <text x="32" y="62" fontSize="9" fill="#1A3A3A" fontFamily="Nunito, sans-serif" textDecoration="line-through" opacity="0.5">Youtube videos</text>
-              
-              {/* Item 2 - Udemy classes (checked) */}
-              <rect x="16" y="69" width="11" height="11" fill="none" stroke="#5B8A72" strokeWidth="2" rx="2"/>
-              <path d="M19 74 L22 77 L25 71" stroke="#5B8A72" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
-              <text x="32" y="78" fontSize="9" fill="#1A3A3A" fontFamily="Nunito, sans-serif" textDecoration="line-through" opacity="0.5">Udemy classes</text>
-              
-              {/* Item 3 - Microsoft Learn (unchecked) */}
-              <rect x="16" y="85" width="11" height="11" fill="none" stroke="#DDD" strokeWidth="1.5" rx="2"/>
-              <text x="32" y="94" fontSize="9" fill="#1A3A3A" fontFamily="Nunito, sans-serif">Microsoft Learn</text>
-              
-              {/* Item 4 - Document (unchecked) */}
-              <rect x="16" y="101" width="11" height="11" fill="none" stroke="#DDD" strokeWidth="1.5" rx="2"/>
-              <text x="32" y="110" fontSize="9" fill="#1A3A3A" fontFamily="Nunito, sans-serif">Document</text>
-              
-              {/* Item 5 - Mock exams (unchecked) */}
-              <rect x="16" y="117" width="11" height="11" fill="none" stroke="#DDD" strokeWidth="1.5" rx="2"/>
-              <text x="32" y="126" fontSize="9" fill="#1A3A3A" fontFamily="Nunito, sans-serif">Mock exams</text>
-              
-              {/* Item 6 - Schedule the exam (unchecked) */}
-              <rect x="16" y="133" width="11" height="11" fill="none" stroke="#DDD" strokeWidth="1.5" rx="2"/>
-              <text x="32" y="142" fontSize="9" fill="#1A3A3A" fontFamily="Nunito, sans-serif">Schedule the exam</text>
+            <span>{menuItems.find(t => t.children.some(s => s.children.some(c => c.id === activeSection)))?.title || 'Notes'}</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M9 18l6-6-6-6" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
+            <span>{content[activeSection]?.subtitle}</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M9 18l6-6-6-6" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            <span style={{ color: colors[currentColor].text, fontWeight: 600 }}>{content[activeSection]?.title}</span>
+          </div>
+
+          {/* Content Card */}
+          <div
+            className="content-card"
+            style={{
+              background: 'white',
+              borderRadius: '24px',
+              boxShadow: '0 4px 40px rgba(0,0,0,0.04)',
+              border: '1px solid rgba(26, 58, 58, 0.06)',
+              overflow: 'hidden',
+              opacity: isAnimating ? 0 : 1,
+              transform: isAnimating ? 'translateY(10px)' : 'translateY(0)',
+              transition: 'all 0.15s ease-out',
+            }}
+          >
+            {/* Card Header */}
+            <div
+              className="header-gradient"
+              style={{
+                background: colors[currentColor].gradient,
+                padding: '28px 32px',
+                position: 'relative',
+                overflow: 'hidden',
+              }}>
+              {/* Decorative circles */}
+              <div className="decorative-circle" style={{
+                position: 'absolute',
+                right: '-20px',
+                top: '-20px',
+                width: '120px',
+                height: '120px',
+                borderRadius: '50%',
+                background: 'rgba(255,255,255,0.1)',
+              }} />
+              <div className="decorative-circle" style={{
+                position: 'absolute',
+                right: '60px',
+                bottom: '-30px',
+                width: '80px',
+                height: '80px',
+                borderRadius: '50%',
+                background: 'rgba(255,255,255,0.05)',
+              }} />
+
+              <div style={{ position: 'relative', zIndex: 1 }}>
+                <div style={{
+                  display: 'inline-block',
+                  padding: '4px 12px',
+                  background: 'rgba(255,255,255,0.2)',
+                  borderRadius: '20px',
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  color: 'white',
+                  marginBottom: '12px',
+                  textTransform: 'uppercase',
+                  letterSpacing: '1px',
+                }}>
+                  {content[activeSection]?.subtitle}
+                </div>
+                {editMode ? (
+                  <input
+                    type="text"
+                    value={content[activeSection]?.title || ''}
+                    onChange={(e) => updateContent(activeSection, 'title', e.target.value)}
+                    style={{
+                      fontFamily: '"Nunito", sans-serif',
+                      fontSize: '28px',
+                      fontWeight: 700,
+                      color: 'white',
+                      margin: 0,
+                      letterSpacing: '-0.5px',
+                      background: 'rgba(255,255,255,0.1)',
+                      border: '2px dashed rgba(255,255,255,0.3)',
+                      borderRadius: '8px',
+                      padding: '4px 12px',
+                      width: '100%',
+                      outline: 'none',
+                    }}
+                    placeholder="Enter title..."
+                  />
+                ) : (
+                  <h1 style={{
+                    fontFamily: '"Nunito", sans-serif',
+                    fontSize: '28px',
+                    fontWeight: 700,
+                    color: 'white',
+                    margin: 0,
+                    letterSpacing: '-0.5px',
+                  }}>
+                    {content[activeSection]?.title}
+                  </h1>
+                )}
+              </div>
+            </div>
+
+            {/* Card Body */}
+            <div style={{ padding: '32px' }}>
+              {editMode ? (
+                <textarea
+                  value={content[activeSection]?.body || ''}
+                  onChange={(e) => updateContent(activeSection, 'body', e.target.value)}
+                  style={{
+                    fontSize: '15px',
+                    color: '#1A3A3A',
+                    lineHeight: 2,
+                    fontFamily: '"Nunito", sans-serif',
+                    fontWeight: 400,
+                    margin: 0,
+                    width: '100%',
+                    minHeight: '400px',
+                    border: '2px dashed rgba(26, 58, 58, 0.2)',
+                    borderRadius: '12px',
+                    padding: '16px',
+                    background: 'rgba(26, 58, 58, 0.02)',
+                    resize: 'vertical',
+                    outline: 'none',
+                  }}
+                  placeholder="Enter content..."
+                />
+              ) : (
+                <pre style={{
+                  fontSize: '15px',
+                  color: '#1A3A3A',
+                  lineHeight: 2,
+                  whiteSpace: 'pre-wrap',
+                  fontFamily: '"Nunito", sans-serif',
+                  fontWeight: 400,
+                  margin: 0,
+                }}>
+                  {content[activeSection]?.body}
+                </pre>
+              )}
+            </div>
+
+            {/* Card Footer - Navigation */}
+            <div style={{
+              padding: '20px 32px',
+              background: 'rgba(26, 58, 58, 0.02)',
+              borderTop: '1px solid rgba(26, 58, 58, 0.06)',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}>
+              {/* Previous */}
+              {(() => {
+                const allSections = menuItems.flatMap(t => t.children.flatMap(s => s.children));
+                const currentIndex = allSections.findIndex(s => s.id === activeSection);
+                const prevSection = currentIndex > 0 ? allSections[currentIndex - 1] : null;
+
+                return prevSection ? (
+                  <button
+                    onClick={() => handleSectionChange(prevSection.id)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      fontSize: '13px',
+                      color: '#1A3A3A',
+                      opacity: 0.7,
+                      padding: '8px 0',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.opacity = 1;
+                      e.currentTarget.style.transform = 'translateX(-4px)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.opacity = 0.7;
+                      e.currentTarget.style.transform = 'translateX(0)';
+                    }}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M19 12H5M12 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    {prevSection.title}
+                  </button>
+                ) : <div />;
+              })()}
+
+              {/* Next */}
+              {(() => {
+                const allSections = menuItems.flatMap(t => t.children.flatMap(s => s.children));
+                const currentIndex = allSections.findIndex(s => s.id === activeSection);
+                const nextSection = currentIndex < allSections.length - 1 ? allSections[currentIndex + 1] : null;
+
+                return nextSection ? (
+                  <button
+                    className="nav-btn"
+                    onClick={() => handleSectionChange(nextSection.id)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      background: colors[currentColor].light,
+                      border: 'none',
+                      cursor: 'pointer',
+                      fontSize: '13px',
+                      color: colors[currentColor].text,
+                      fontWeight: 600,
+                      padding: '10px 16px',
+                      borderRadius: '10px',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = colors[currentColor].bg;
+                      e.currentTarget.style.transform = 'translateX(4px)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = colors[currentColor].light;
+                      e.currentTarget.style.transform = 'translateX(0)';
+                    }}
+                  >
+                    {nextSection.title}
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </button>
+                ) : <div />;
+              })()}
+            </div>
+          </div>
+
+          {/* Quick Navigation Cards */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            gap: '16px',
+            marginTop: '32px',
+          }}>
+            {menuItems.map((topic) => (
+              <button
+                key={topic.id}
+                className="topic-card"
+                onClick={() => {
+                  const firstSection = topic.children[0]?.children[0]?.id;
+                  if (firstSection) {
+                    setExpandedMenus([topic.id, topic.children[0].id]);
+                    handleSectionChange(firstSection);
+                  }
+                }}
+                style={{
+                  padding: '20px',
+                  borderRadius: '16px',
+                  background: 'white',
+                  border: `1px solid ${expandedMenus.includes(topic.id) ? colors[topic.color].border : 'rgba(26, 58, 58, 0.08)'}`,
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  boxShadow: expandedMenus.includes(topic.id) ? `0 4px 20px ${colors[topic.color].light}` : '0 2px 10px rgba(0,0,0,0.02)',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-4px) scale(1.02)';
+                  e.currentTarget.style.boxShadow = `0 12px 40px ${colors[topic.color].light}`;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                  e.currentTarget.style.boxShadow = expandedMenus.includes(topic.id) ? `0 4px 20px ${colors[topic.color].light}` : '0 2px 10px rgba(0,0,0,0.02)';
+                }}
+              >
+                <div className="floating-icon" style={{ fontSize: '24px', marginBottom: '12px' }}>{topic.icon}</div>
+                <div style={{
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  color: '#1A3A3A',
+                  marginBottom: '4px',
+                }}>
+                  {topic.title}
+                </div>
+                <div style={{
+                  fontSize: '12px',
+                  color: colors[topic.color].text,
+                  opacity: 0.8,
+                }}>
+                  {topic.children.reduce((acc, sub) => acc + sub.children.length, 0)} topics
+                </div>
+              </button>
+            ))}
           </div>
         </main>
       </div>
 
       {/* Footer */}
       <footer style={{
-        padding: '40px 32px',
+        padding: '32px',
         textAlign: 'center',
-        borderTop: '1px solid rgba(26, 58, 58, 0.1)',
+        borderTop: '1px solid rgba(26, 58, 58, 0.06)',
+        background: 'rgba(255,255,255,0.5)',
       }}>
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '6px', marginBottom: '12px' }}>
-          <button 
-            onClick={() => {
-              setExpandedMenus(prev => prev.includes('az-204') ? prev : [...prev, 'az-204', 'azure-app-service']);
-              setActiveSection('key-components');
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-            style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#B07171', border: 'none', cursor: 'pointer', padding: 0 }} 
-            title="AZ-204 Certification"
-          />
-          <button 
-            onClick={() => {
-              setExpandedMenus(prev => prev.includes('ai-900') ? prev : [...prev, 'ai-900', 'ai-concepts']);
-              setActiveSection('ai-intro');
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-            style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#9370A5', border: 'none', cursor: 'pointer', padding: 0 }} 
-            title="AI-900 AI Fundamentals"
-          />
-          <button 
-            onClick={() => {
-              setExpandedMenus(prev => prev.includes('angular') ? prev : [...prev, 'angular', 'angular-fundamentals']);
-              setActiveSection('angular-components');
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-            style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#5B8A72', border: 'none', cursor: 'pointer', padding: 0 }} 
-            title="Angular"
-          />
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          gap: '8px',
+          marginBottom: '16px'
+        }}>
+          {menuItems.map((topic, i) => (
+            <button
+              key={topic.id}
+              onClick={() => {
+                const firstSection = topic.children[0]?.children[0]?.id;
+                if (firstSection) {
+                  setExpandedMenus([topic.id, topic.children[0].id]);
+                  handleSectionChange(firstSection);
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+              }}
+              style={{
+                width: '10px',
+                height: '10px',
+                borderRadius: '50%',
+                background: colors[topic.color].border,
+                border: 'none',
+                cursor: 'pointer',
+                padding: 0,
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                animation: `pulse 2s ease-in-out ${i * 0.3}s infinite`,
+              }}
+              title={topic.title}
+              onMouseEnter={(e) => {
+                e.target.style.transform = 'scale(1.5)';
+                e.target.style.boxShadow = `0 0 15px ${colors[topic.color].border}`;
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = 'scale(1)';
+                e.target.style.boxShadow = 'none';
+              }}
+            />
+          ))}
         </div>
         <p style={{
           fontSize: '12px',
           color: '#2D5A5A',
           opacity: 0.5,
+          margin: 0,
         }}>
           © 2025 Ayse Hilal Yalciner
         </p>
