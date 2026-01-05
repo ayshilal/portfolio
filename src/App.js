@@ -18,6 +18,18 @@ function Home({ onNavigate }) {
     setIsLoaded(true);
   }, []);
 
+  // Dots animation styles
+  const dotsKeyframes = `
+    @keyframes fadeInOut {
+      0%, 100% {
+        opacity: 0;
+      }
+      50% {
+        opacity: 1;
+      }
+    }
+  `;
+
   const experience = [
     {
       company: 'TD Bank',
@@ -98,6 +110,7 @@ function Home({ onNavigate }) {
       color: '#1A3A3A',
       fontFamily: '"Inter", sans-serif',
     }}>
+      <style>{dotsKeyframes}</style>
       {/* Navigation */}
       <nav style={{
         position: 'fixed',
@@ -195,11 +208,33 @@ function Home({ onNavigate }) {
             fontSize: 'clamp(36px, 6vw, 56px)',
             fontWeight: 300,
             letterSpacing: '2px',
-            marginBottom: '24px',
+            marginBottom: '16px',
             color: '#1A3A3A',
           }}>
             Hello, I'm Ayse Hilal
           </h1>
+
+          {/* Animated Dots */}
+          <div style={{
+            display: 'flex',
+            gap: '10px',
+            marginBottom: '24px',
+            maxWidth: '420px',
+            justifyContent: 'space-between',
+          }}>
+            {[...Array(20)].map((_, i) => (
+              <span
+                key={i}
+                style={{
+                  width: '5px',
+                  height: '5px',
+                  borderRadius: '50%',
+                  background: i % 3 === 0 ? '#E07850' : i % 3 === 1 ? '#5B8A72' : '#6B8FAD',
+                  animation: `fadeInOut 4s ease-in-out ${i * 0.15}s infinite`,
+                }}
+              />
+            ))}
+          </div>
 
           <p style={{
             fontSize: '16px',
