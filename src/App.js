@@ -208,6 +208,31 @@ function Home({ onNavigate }) {
     .footer-dot:hover {
       transform: scale(1.5);
     }
+
+    /* High-resolution screen support */
+    @media (min-width: 1600px) {
+      html {
+        font-size: 18px;
+      }
+    }
+
+    @media (min-width: 1920px) {
+      html {
+        font-size: 20px;
+      }
+    }
+
+    @media (min-width: 2560px) {
+      html {
+        font-size: 24px;
+      }
+    }
+
+    @media (min-width: 3840px) {
+      html {
+        font-size: 32px;
+      }
+    }
   `;
 
   const experience = [
@@ -366,8 +391,8 @@ function Home({ onNavigate }) {
         minHeight: '100vh',
         display: 'flex',
         alignItems: 'center',
-        padding: '120px 32px 80px',
-        maxWidth: '900px',
+        padding: 'clamp(100px, 12vh, 140px) clamp(24px, 5vw, 80px) clamp(60px, 8vh, 100px)',
+        maxWidth: 'min(1400px, 90vw)',
         margin: '0 auto',
       }}>
         <div style={{
@@ -376,7 +401,7 @@ function Home({ onNavigate }) {
           transition: 'all 0.8s ease',
         }}>
           <p style={{
-            fontSize: '12px',
+            fontSize: 'clamp(12px, 1vw, 16px)',
             fontWeight: 500,
             letterSpacing: '3px',
             textTransform: 'uppercase',
@@ -422,11 +447,11 @@ function Home({ onNavigate }) {
           </div>
 
           <p style={{
-            fontSize: '16px',
+            fontSize: 'clamp(15px, 1.5vw, 20px)',
             fontWeight: 300,
             color: '#2D5A5A',
             marginBottom: '40px',
-            maxWidth: '600px',
+            maxWidth: '800px',
             lineHeight: 1.8,
           }}>
             8+ years of experience designing, building, and maintaining scalable web applications. 
@@ -438,8 +463,8 @@ function Home({ onNavigate }) {
           {/* Tech Pills */}
           <div style={{
             display: 'flex',
-            gap: '10px',
-            marginBottom: '40px',
+            gap: 'clamp(8px, 1vw, 14px)',
+            marginBottom: 'clamp(32px, 4vw, 56px)',
             flexWrap: 'wrap',
           }}>
             {['.NET', 'Azure', 'Angular', 'C#', 'SQL Server'].map((tech, i) => (
@@ -447,9 +472,9 @@ function Home({ onNavigate }) {
                 key={tech}
                 className="tech-pill"
                 style={{
-                  padding: '10px 20px',
+                  padding: 'clamp(8px, 1vw, 14px) clamp(16px, 2vw, 28px)',
                   borderRadius: '50px',
-                  fontSize: '13px',
+                  fontSize: 'clamp(12px, 1.1vw, 17px)',
                   background: 'rgba(26, 58, 58, 0.08)',
                   color: '#1A3A3A',
                   cursor: 'default',
@@ -463,9 +488,9 @@ function Home({ onNavigate }) {
           {/* Contact links */}
           <div style={{
             display: 'flex',
-            gap: '24px',
+            gap: 'clamp(16px, 2vw, 32px)',
             flexWrap: 'wrap',
-            fontSize: '14px',
+            fontSize: 'clamp(13px, 1.2vw, 18px)',
           }}>
             <a href="mailto:aysehilalyalciner@gmail.com" className="contact-link" style={{ color: '#1A3A3A', textDecoration: 'none', opacity: 0.8 }}>
               aysehilalyalciner@gmail.com
@@ -485,15 +510,15 @@ function Home({ onNavigate }) {
           <div
             className="featured-card"
             style={{
-              marginTop: '48px',
-              padding: '24px',
+              marginTop: 'clamp(36px, 4vw, 64px)',
+              padding: 'clamp(20px, 2.5vw, 36px)',
               borderRadius: '20px',
               background: colors.orange.bg,
               borderLeft: `3px solid ${colors.orange.border}`,
-              maxWidth: '400px',
+              maxWidth: 'min(500px, 100%)',
             }}>
             <p style={{
-              fontSize: '11px',
+              fontSize: 'clamp(10px, 0.9vw, 14px)',
               color: '#2D5A5A',
               marginBottom: '8px',
               textTransform: 'uppercase',
@@ -502,13 +527,13 @@ function Home({ onNavigate }) {
             }}>
               Featured Project
             </p>
-            <a 
+            <a
               href="https://github.com/ayshilal/AllForKids"
               target="_blank"
               rel="noopener noreferrer"
               style={{
                 fontFamily: '"Cormorant Garamond", serif',
-                fontSize: '22px',
+                fontSize: 'clamp(20px, 2vw, 28px)',
                 fontWeight: 400,
                 color: '#1A3A3A',
                 textDecoration: 'none',
@@ -517,7 +542,7 @@ function Home({ onNavigate }) {
               AllForKids →
             </a>
             <p style={{
-              fontSize: '13px',
+              fontSize: 'clamp(12px, 1.1vw, 17px)',
               color: '#2D5A5A',
               marginTop: '8px',
               opacity: 0.7,
@@ -530,13 +555,13 @@ function Home({ onNavigate }) {
 
       {/* Experience */}
       <section id="experience" style={{
-        padding: '80px 32px',
-        maxWidth: '900px',
+        padding: 'clamp(60px, 8vh, 100px) clamp(24px, 5vw, 80px)',
+        maxWidth: 'min(1400px, 90vw)',
         margin: '0 auto',
       }}>
         <h2 style={{
           fontFamily: '"Cormorant Garamond", serif',
-          fontSize: '32px',
+          fontSize: 'clamp(28px, 4vw, 40px)',
           fontWeight: 300,
           letterSpacing: '4px',
           marginBottom: '16px',
@@ -546,11 +571,11 @@ function Home({ onNavigate }) {
           EXPERIENCE
         </h2>
         <p style={{
-          fontSize: '12px',
+          fontSize: 'clamp(12px, 1vw, 16px)',
           color: '#2D5A5A',
           opacity: 0.6,
           textAlign: 'center',
-          marginBottom: '48px',
+          marginBottom: 'clamp(32px, 4vh, 64px)',
           letterSpacing: '1px',
         }}>
           my professional journey
@@ -562,7 +587,7 @@ function Home({ onNavigate }) {
               key={i}
               className="experience-card"
               style={{
-                padding: '24px',
+                padding: 'clamp(20px, 2.5vw, 40px)',
                 borderRadius: '20px',
                 background: colors[job.color].bg,
                 borderLeft: `3px solid ${colors[job.color].border}`,
@@ -580,7 +605,7 @@ function Home({ onNavigate }) {
                 <div>
                   <h3 style={{
                     fontFamily: '"Cormorant Garamond", serif',
-                    fontSize: '22px',
+                    fontSize: 'clamp(20px, 2vw, 28px)',
                     fontWeight: 400,
                     color: '#1A3A3A',
                     marginBottom: '4px',
@@ -588,7 +613,7 @@ function Home({ onNavigate }) {
                     {job.company}
                   </h3>
                   <p style={{
-                    fontSize: '14px',
+                    fontSize: 'clamp(13px, 1.2vw, 18px)',
                     color: '#2D5A5A',
                     opacity: 0.8,
                   }}>
@@ -596,7 +621,7 @@ function Home({ onNavigate }) {
                   </p>
                 </div>
                 <span style={{
-                  fontSize: '12px',
+                  fontSize: 'clamp(11px, 1vw, 15px)',
                   color: '#2D5A5A',
                   opacity: 0.6,
                 }}>
@@ -613,7 +638,7 @@ function Home({ onNavigate }) {
                     position: 'relative',
                     paddingLeft: '16px',
                     marginBottom: '8px',
-                    fontSize: '14px',
+                    fontSize: 'clamp(13px, 1.2vw, 18px)',
                     color: '#1A3A3A',
                     lineHeight: 1.7,
                     opacity: 0.85,
@@ -632,11 +657,11 @@ function Home({ onNavigate }) {
                 ))}
               </ul>
 
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'clamp(6px, 0.5vw, 10px)' }}>
                 {job.tech.map((tech, j) => (
                   <span key={j} style={{
-                    fontSize: '11px',
-                    padding: '4px 10px',
+                    fontSize: 'clamp(11px, 1vw, 15px)',
+                    padding: 'clamp(4px, 0.4vw, 8px) clamp(10px, 1vw, 16px)',
                     borderRadius: '50px',
                     background: colors[job.color].tag,
                     color: colors[job.color].text,
@@ -652,13 +677,13 @@ function Home({ onNavigate }) {
 
       {/* Education */}
       <section style={{
-        padding: '80px 32px',
-        maxWidth: '900px',
+        padding: 'clamp(60px, 8vh, 100px) clamp(24px, 5vw, 80px)',
+        maxWidth: 'min(1400px, 90vw)',
         margin: '0 auto',
       }}>
         <h2 style={{
           fontFamily: '"Cormorant Garamond", serif',
-          fontSize: '32px',
+          fontSize: 'clamp(28px, 4vw, 40px)',
           fontWeight: 300,
           letterSpacing: '4px',
           marginBottom: '16px',
@@ -668,20 +693,20 @@ function Home({ onNavigate }) {
           EDUCATION
         </h2>
         <p style={{
-          fontSize: '12px',
+          fontSize: 'clamp(12px, 1vw, 16px)',
           color: '#2D5A5A',
           opacity: 0.6,
           textAlign: 'center',
-          marginBottom: '48px',
+          marginBottom: 'clamp(32px, 4vh, 64px)',
           letterSpacing: '1px',
         }}>
           academic background
         </p>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(16px, 2vw, 24px)' }}>
           {education.map((edu, i) => (
             <div key={i} className="edu-card" style={{
-              padding: '24px',
+              padding: 'clamp(20px, 2.5vw, 36px)',
               borderRadius: '20px',
               background: colors.purple.bg,
               borderLeft: `3px solid ${colors.purple.border}`,
@@ -690,18 +715,18 @@ function Home({ onNavigate }) {
             }}>
               <h3 style={{
                 fontFamily: '"Cormorant Garamond", serif',
-                fontSize: '20px',
+                fontSize: 'clamp(18px, 1.8vw, 26px)',
                 fontWeight: 400,
                 color: '#1A3A3A',
                 marginBottom: '4px',
               }}>
                 {edu.degree}
               </h3>
-              <p style={{ fontSize: '14px', color: '#2D5A5A', opacity: 0.8 }}>
+              <p style={{ fontSize: 'clamp(13px, 1.2vw, 18px)', color: '#2D5A5A', opacity: 0.8 }}>
                 {edu.school}
               </p>
               {edu.note && (
-                <p style={{ fontSize: '12px', color: '#2D5A5A', opacity: 0.5, marginTop: '4px' }}>
+                <p style={{ fontSize: 'clamp(11px, 1vw, 15px)', color: '#2D5A5A', opacity: 0.5, marginTop: '4px' }}>
                   {edu.note}
                 </p>
               )}
@@ -712,13 +737,13 @@ function Home({ onNavigate }) {
 
       {/* Skills */}
       <section id="skills" style={{
-        padding: '80px 32px',
-        maxWidth: '900px',
+        padding: 'clamp(60px, 8vh, 100px) clamp(24px, 5vw, 80px)',
+        maxWidth: 'min(1400px, 90vw)',
         margin: '0 auto',
       }}>
         <h2 style={{
           fontFamily: '"Cormorant Garamond", serif',
-          fontSize: '32px',
+          fontSize: 'clamp(28px, 4vw, 40px)',
           fontWeight: 300,
           letterSpacing: '4px',
           marginBottom: '16px',
@@ -728,11 +753,11 @@ function Home({ onNavigate }) {
           SKILLS
         </h2>
         <p style={{
-          fontSize: '12px',
+          fontSize: 'clamp(12px, 1vw, 16px)',
           color: '#2D5A5A',
           opacity: 0.6,
           textAlign: 'center',
-          marginBottom: '48px',
+          marginBottom: 'clamp(32px, 4vh, 64px)',
           letterSpacing: '1px',
         }}>
           technologies & tools
@@ -741,8 +766,8 @@ function Home({ onNavigate }) {
         {/* Category Pills */}
         <div style={{
           display: 'flex',
-          gap: '8px',
-          marginBottom: '32px',
+          gap: 'clamp(8px, 1vw, 14px)',
+          marginBottom: 'clamp(24px, 3vw, 48px)',
           justifyContent: 'center',
           flexWrap: 'wrap',
         }}>
@@ -752,9 +777,9 @@ function Home({ onNavigate }) {
               onClick={() => setActiveCategory(cat)}
               className="skill-btn"
               style={{
-                padding: '10px 20px',
+                padding: 'clamp(8px, 1vw, 14px) clamp(16px, 2vw, 28px)',
                 borderRadius: '50px',
-                fontSize: '13px',
+                fontSize: 'clamp(12px, 1.1vw, 17px)',
                 border: 'none',
                 cursor: 'pointer',
                 background: activeCategory === cat ? '#1A3A3A' : 'rgba(26, 58, 58, 0.08)',
@@ -767,7 +792,7 @@ function Home({ onNavigate }) {
           ))}
         </div>
 
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'center' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'clamp(8px, 1vw, 14px)', justifyContent: 'center' }}>
           {(activeCategory === 'All'
             ? [...skills.backend, ...skills.frontend, ...skills.tools]
             : skills[activeCategory.toLowerCase()]
@@ -776,9 +801,9 @@ function Home({ onNavigate }) {
               key={skill}
               className="skill-tag"
               style={{
-                padding: '10px 20px',
+                padding: 'clamp(8px, 1vw, 14px) clamp(16px, 2vw, 28px)',
                 borderRadius: '50px',
-                fontSize: '13px',
+                fontSize: 'clamp(12px, 1.1vw, 17px)',
                 background: 'rgba(26, 58, 58, 0.08)',
                 color: '#1A3A3A',
                 cursor: 'default',
@@ -792,13 +817,13 @@ function Home({ onNavigate }) {
 
       {/* Certifications */}
       <section style={{
-        padding: '80px 32px',
-        maxWidth: '900px',
+        padding: 'clamp(60px, 8vh, 100px) clamp(24px, 5vw, 80px)',
+        maxWidth: 'min(1400px, 90vw)',
         margin: '0 auto',
       }}>
         <h2 style={{
           fontFamily: '"Cormorant Garamond", serif',
-          fontSize: '32px',
+          fontSize: 'clamp(28px, 4vw, 40px)',
           fontWeight: 300,
           letterSpacing: '4px',
           marginBottom: '16px',
@@ -808,11 +833,11 @@ function Home({ onNavigate }) {
           CERTIFICATIONS
         </h2>
         <p style={{
-          fontSize: '12px',
+          fontSize: 'clamp(12px, 1vw, 16px)',
           color: '#2D5A5A',
           opacity: 0.6,
           textAlign: 'center',
-          marginBottom: '48px',
+          marginBottom: 'clamp(32px, 4vh, 64px)',
           letterSpacing: '1px',
         }}>
           professional credentials
@@ -820,19 +845,19 @@ function Home({ onNavigate }) {
 
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-          gap: '16px',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))',
+          gap: 'clamp(16px, 2vw, 24px)',
         }}>
           {certifications.map((cert, i) => (
             <div key={i} className="cert-card" style={{
-              padding: '20px',
+              padding: 'clamp(16px, 2vw, 28px)',
               borderRadius: '20px',
               background: colors.blue.bg,
               borderLeft: `3px solid ${colors.blue.border}`,
               animation: `scaleIn 0.4s ease-out ${i * 0.08}s both`,
             }}>
               <p style={{
-                fontSize: '15px',
+                fontSize: 'clamp(14px, 1.3vw, 20px)',
                 fontWeight: 500,
                 color: '#1A3A3A',
                 marginBottom: '4px',
@@ -840,7 +865,7 @@ function Home({ onNavigate }) {
                 {cert.name}
               </p>
               <p style={{
-                fontSize: '12px',
+                fontSize: 'clamp(11px, 1vw, 16px)',
                 color: '#2D5A5A',
                 opacity: 0.7,
               }}>
@@ -853,14 +878,14 @@ function Home({ onNavigate }) {
 
       {/* Contact */}
       <section id="contact" style={{
-        padding: '80px 32px',
-        maxWidth: '900px',
+        padding: 'clamp(60px, 8vh, 100px) clamp(24px, 5vw, 80px)',
+        maxWidth: 'min(1400px, 90vw)',
         margin: '0 auto',
         textAlign: 'center',
       }}>
         <h2 style={{
           fontFamily: '"Cormorant Garamond", serif',
-          fontSize: '32px',
+          fontSize: 'clamp(28px, 4vw, 40px)',
           fontWeight: 300,
           letterSpacing: '4px',
           marginBottom: '16px',
@@ -869,9 +894,9 @@ function Home({ onNavigate }) {
           LET'S CONNECT
         </h2>
         <p style={{
-          fontSize: '14px',
+          fontSize: 'clamp(13px, 1.2vw, 18px)',
           color: '#2D5A5A',
-          marginBottom: '40px',
+          marginBottom: 'clamp(32px, 4vw, 56px)',
           lineHeight: 1.7,
           opacity: 0.8,
         }}>
@@ -883,11 +908,11 @@ function Home({ onNavigate }) {
           className="cta-btn"
           style={{
             display: 'inline-block',
-            padding: '18px 40px',
+            padding: 'clamp(14px, 1.5vw, 24px) clamp(32px, 3vw, 56px)',
             borderRadius: '50px',
             background: 'linear-gradient(135deg, #E07850 0%, #D4694A 100%)',
             color: 'white',
-            fontSize: '15px',
+            fontSize: 'clamp(14px, 1.3vw, 20px)',
             textDecoration: 'none',
             boxShadow: '0 4px 16px rgba(224, 120, 80, 0.3)',
           }}
@@ -898,9 +923,10 @@ function Home({ onNavigate }) {
         <div style={{
           display: 'flex',
           justifyContent: 'center',
-          gap: '32px',
-          marginTop: '40px',
-          fontSize: '14px',
+          gap: 'clamp(24px, 3vw, 48px)',
+          marginTop: 'clamp(32px, 4vw, 56px)',
+          fontSize: 'clamp(13px, 1.2vw, 18px)',
+          flexWrap: 'wrap',
         }}>
           <a href="tel:+19296780598" className="contact-link" style={{ color: '#1A3A3A', textDecoration: 'none', opacity: 0.7 }}>
             (929) 678-0598
@@ -916,23 +942,23 @@ function Home({ onNavigate }) {
 
       {/* Footer */}
       <footer style={{
-        padding: '40px 32px',
+        padding: 'clamp(32px, 4vw, 56px) clamp(24px, 5vw, 80px)',
         textAlign: 'center',
         borderTop: '1px solid rgba(26, 58, 58, 0.1)',
       }}>
         <div style={{
           display: 'flex',
           justifyContent: 'center',
-          gap: '8px',
-          marginBottom: '16px',
+          gap: 'clamp(6px, 0.8vw, 12px)',
+          marginBottom: 'clamp(12px, 1.5vw, 24px)',
         }}>
           {['#E07850', '#5B8A72', '#6B8FAD', '#9370A5'].map((color, i) => (
             <span
               key={i}
               className="footer-dot"
               style={{
-                width: '6px',
-                height: '6px',
+                width: 'clamp(6px, 0.6vw, 10px)',
+                height: 'clamp(6px, 0.6vw, 10px)',
                 borderRadius: '50%',
                 background: color,
                 opacity: 0.6,
@@ -942,7 +968,7 @@ function Home({ onNavigate }) {
           ))}
         </div>
         <p style={{
-          fontSize: '12px',
+          fontSize: 'clamp(11px, 1vw, 15px)',
           color: '#2D5A5A',
           opacity: 0.5,
         }}>
@@ -2522,8 +2548,8 @@ loadChildren: () => import('./feature/feature.module')
           className="blog-main"
           style={{
             flex: 1,
-            padding: '32px 48px',
-            maxWidth: '900px',
+            padding: 'clamp(24px, 4vh, 48px) clamp(24px, 5vw, 80px)',
+            maxWidth: 'min(1400px, 90vw)',
             marginLeft: sidebarOpen ? '0' : '0',
             transition: 'margin 0.3s ease',
           }}
