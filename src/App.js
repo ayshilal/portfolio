@@ -117,7 +117,7 @@ function Home({ onNavigate }) {
         top: 0,
         left: 0,
         right: 0,
-        padding: '20px 32px',
+        padding: '20px clamp(16px, 4vw, 32px)',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
@@ -126,24 +126,26 @@ function Home({ onNavigate }) {
         backdropFilter: 'blur(10px)',
         opacity: isLoaded ? 1 : 0,
         transition: 'opacity 0.5s ease',
+        gap: '24px',
       }}>
         <button
           onClick={() => onNavigate('home')}
           style={{
             fontFamily: '"Cormorant Garamond", serif',
-            fontSize: '24px',
+            fontSize: 'clamp(18px, 4vw, 24px)',
             fontWeight: 300,
-            letterSpacing: '4px',
+            letterSpacing: 'clamp(2px, 0.5vw, 4px)',
             color: '#1A3A3A',
             background: 'none',
             border: 'none',
             cursor: 'pointer',
             padding: 0,
+            whiteSpace: 'nowrap',
           }}
         >
           AYSE HILAL
         </button>
-        <div style={{ display: 'flex', gap: '32px' }}>
+        <div style={{ display: 'flex', gap: 'clamp(16px, 3vw, 32px)', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
           {['About', 'Experience', 'Skills', 'Contact'].map((item) => (
             <a
               key={item}
@@ -217,17 +219,17 @@ function Home({ onNavigate }) {
           {/* Animated Dots */}
           <div style={{
             display: 'flex',
-            gap: '10px',
+            gap: 'clamp(4px, 1vw, 10px)',
             marginBottom: '24px',
-            maxWidth: '420px',
+            width: 'clamp(280px, 50vw, 420px)',
             justifyContent: 'space-between',
           }}>
-            {[...Array(20)].map((_, i) => (
+            {[...Array(15)].map((_, i) => (
               <span
                 key={i}
                 style={{
-                  width: '5px',
-                  height: '5px',
+                  width: 'clamp(4px, 0.8vw, 5px)',
+                  height: 'clamp(4px, 0.8vw, 5px)',
                   borderRadius: '50%',
                   background: i % 3 === 0 ? '#E07850' : i % 3 === 1 ? '#5B8A72' : '#6B8FAD',
                   animation: `fadeInOut 4s ease-in-out ${i * 0.15}s infinite`,
@@ -767,31 +769,33 @@ Stay tuned for more posts coming soon!`,
         top: 0,
         left: 0,
         right: 0,
-        padding: '20px 32px',
+        padding: '20px clamp(16px, 4vw, 32px)',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
         zIndex: 100,
         background: 'rgba(253, 246, 240, 0.95)',
         backdropFilter: 'blur(10px)',
+        gap: '24px',
       }}>
         <button
           onClick={() => onNavigate('home')}
           style={{
             fontFamily: '"Cormorant Garamond", serif',
-            fontSize: '24px',
+            fontSize: 'clamp(18px, 4vw, 24px)',
             fontWeight: 300,
-            letterSpacing: '4px',
+            letterSpacing: 'clamp(2px, 0.5vw, 4px)',
             color: '#1A3A3A',
             background: 'none',
             border: 'none',
             cursor: 'pointer',
             padding: 0,
+            whiteSpace: 'nowrap',
           }}
         >
           AYSE HILAL
         </button>
-        <div style={{ display: 'flex', gap: '32px' }}>
+        <div style={{ display: 'flex', gap: 'clamp(16px, 3vw, 32px)' }}>
           <button
             onClick={() => onNavigate('home')}
             style={{
