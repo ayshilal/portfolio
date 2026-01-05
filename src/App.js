@@ -292,7 +292,7 @@ function Home({ onNavigate }) {
             <a href="https://github.com/ayshilal" target="_blank" rel="noopener noreferrer" style={{ color: '#1A3A3A', textDecoration: 'none', opacity: 0.8 }}>
               GitHub
             </a>
-            <span style={{ color: '#2D5A5A', opacity: 0.6 }}>New York, NY</span>
+            
           </div>
 
           {/* Featured Project Card */}
