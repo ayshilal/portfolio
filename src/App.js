@@ -329,8 +329,8 @@ function Home({ onNavigate }) {
             marginTop: '48px',
             padding: '24px',
             borderRadius: '20px',
-            background: colors.orange.bg,
-            borderLeft: `3px solid ${colors.orange.border}`,
+            background: 'rgba(139, 155, 126, 0.15)',
+            borderLeft: '3px solid #8B9B7E',
             maxWidth: '400px',
           }}>
             <p style={{
@@ -343,27 +343,32 @@ function Home({ onNavigate }) {
             }}>
               Featured Project
             </p>
-            <a 
-              href="https://github.com/ayshilal/AllForKids"
-              target="_blank"
-              rel="noopener noreferrer"
+            <button 
+              onClick={() => onNavigate('project')}
               style={{
                 fontFamily: '"Cormorant Garamond", serif',
                 fontSize: '22px',
                 fontWeight: 400,
                 color: '#1A3A3A',
                 textDecoration: 'none',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: 0,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
               }}
             >
-              AllForKids →
-            </a>
+              <span>❀</span> Meadowcraft →
+            </button>
             <p style={{
               fontSize: '13px',
               color: '#2D5A5A',
               marginTop: '8px',
               opacity: 0.7,
             }}>
-              Open source project on GitHub
+              Skincare routine companion app
             </p>
           </div>
         </div>
@@ -1575,6 +1580,24 @@ Track your morning and evening routines, catalog your products by type, and neve
           }}>
             {project.subtitle}
           </p>
+        </div>
+
+        {/* Hero Image */}
+        <div style={{
+          borderRadius: '16px',
+          overflow: 'hidden',
+          marginBottom: '30px',
+          boxShadow: '0 4px 20px rgba(92, 77, 60, 0.12)',
+        }}>
+          <img 
+            src="/images/meadowcraft-hero.jpg" 
+            alt="Skincare products collection"
+            style={{
+              width: '100%',
+              height: 'auto',
+              display: 'block',
+            }}
+          />
         </div>
 
         {/* Tech Stack */}
