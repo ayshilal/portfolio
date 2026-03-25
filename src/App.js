@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react';
 
 function App() {
   const [currentPage, setCurrentPage] = useState(() => {
+    if (window.location.search.includes('project')) {
+      return 'project';
+    }
     // Secret URL: add ?notes to access blog
     if (window.location.search.includes('notes')) {
       return 'blog';
@@ -12,6 +15,10 @@ function App() {
     }
     return 'home';
   });
+
+  if (currentPage === 'project') {
+    return <ProjectDetail onNavigate={setCurrentPage} />;
+  }
 
   if (currentPage === 'blog') {
     return <Blog onNavigate={setCurrentPage} />;
@@ -767,6 +774,519 @@ function Home({ onNavigate }) {
   );
 }
 
+
+function ProjectDetail({ onNavigate }) {
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+    setIsLoaded(true);
+    window.scrollTo(0, 0);
+  }, []);
+
+  const colors = {
+    green: { bg: 'rgba(91, 138, 114, 0.1)', border: '#5B8A72', tag: 'rgba(91, 138, 114, 0.25)', text: '#5B8A72' },
+    orange: { bg: 'rgba(224, 120, 80, 0.1)', border: '#E07850', tag: 'rgba(224, 120, 80, 0.25)', text: '#E07850' },
+  };
+
+  const techStack = [
+    'MCP C# SDK', 'Azure AI Foundry', 'Azure AI Search', 'Durable Functions',
+    'Azure Service Bus', 'Cosmos DB', '.NET Aspire', 'Angular / Ionic',
+  ];
+
+  const appScreens = [
+    { video: '/videos/Main_page_scroll.mp4', label: 'Home', desc: 'Browse your dashboard with quick access to products, routines, and AI features.' },
+    { video: '/videos/Evaluate_product.mp4', label: 'Product Evaluation', desc: 'Analyzes ingredients and scores products for actives, purity, and **routine compatibility**.', highlight: 'routine compatibility' },
+    { video: '/videos/AI_dermatologist.mp4', label: 'AI Dermatologist', desc: 'Ask questions about your routine, ingredients, or skin concerns and get personalized advice.' },
+    { video: '/videos/Products.mp4', label: 'Products', desc: 'Catalog and organize all your skincare products by type, brand, and usage.' },
+    { video: '/videos/Beauty_facts.mp4', label: 'Beauty Facts', desc: 'Discover curated skincare tips, self-care habits, and wellness recommendations.' },
+    { video: '/videos/Check_products.mp4', label: 'Check Products', desc: 'Evaluates whether a new product fits your existing routine without conflicts.' },
+  ];
+
+  const projectStyles = `
+    .phone-frame {
+      position: relative;
+      background: #1a1a1a;
+      border-radius: 32px;
+      padding: 8px;
+      overflow: hidden;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
+      transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.4s ease;
+    }
+
+    .phone-frame:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 35px 80px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.05);
+    }
+
+    .phone-screen {
+      border-radius: 16px;
+      overflow: hidden;
+      background: #FDF6F0;
+    }
+
+    .phone-screen video {
+      width: 100%;
+      display: block;
+      transform: translateZ(0);
+      -webkit-transform: translateZ(0);
+    }
+
+    .phone-notch {
+      display: none;
+    }
+
+    .phone-frame-small {
+      position: relative;
+      background: #1a1a1a;
+      border-radius: 28px;
+      padding: 8px;
+      overflow: hidden;
+      margin: 0 auto;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+      transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.4s ease;
+    }
+
+    .phone-frame-small:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.18);
+    }
+
+    .phone-frame-small .phone-screen {
+      border-radius: 22px;
+    }
+
+    .phone-frame-small .phone-notch {
+      height: 20px;
+      border-radius: 0 0 14px 14px;
+      top: 8px;
+    }
+
+    .project-hero {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: clamp(32px, 5vw, 80px);
+      align-items: center;
+    }
+
+    @media (max-width: 768px) {
+      .project-hero {
+        grid-template-columns: 1fr;
+        text-align: center;
+      }
+      .project-hero-info {
+        order: 1;
+      }
+      .project-hero-phone {
+        order: 2;
+        display: flex;
+        justify-content: center;
+      }
+    }
+
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: clamp(16px, 3vw, 32px);
+    }
+
+    @media (max-width: 900px) {
+      .gallery-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 480px) {
+      .gallery-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+    }
+
+    .project-back-btn {
+      transition: all 0.3s ease;
+    }
+
+    .project-back-btn:hover {
+      background: rgba(91, 138, 114, 0.15) !important;
+      transform: translateX(-2px);
+    }
+
+    .project-tech-tag {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .project-tech-tag:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(91, 138, 114, 0.2);
+    }
+  `;
+
+  return (
+    <div style={{
+      minHeight: '100vh',
+      background: '#FDF6F0',
+      color: '#1A3A3A',
+      fontFamily: '"Inter", sans-serif',
+    }}>
+      <style>{projectStyles}</style>
+
+      {/* Navigation */}
+      <nav style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        padding: '20px clamp(16px, 4vw, 32px)',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        zIndex: 100,
+        background: 'rgba(253, 246, 240, 0.95)',
+        backdropFilter: 'blur(10px)',
+        opacity: isLoaded ? 1 : 0,
+        transition: 'opacity 0.5s ease',
+      }}>
+        <button
+          className="project-back-btn"
+          onClick={() => {
+            window.history.pushState({}, '', '/');
+            onNavigate('home');
+          }}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            fontFamily: '"Inter", sans-serif',
+            fontSize: '14px',
+            fontWeight: 500,
+            color: colors.green.text,
+            background: colors.green.bg,
+            border: `1px solid ${colors.green.tag}`,
+            borderRadius: '24px',
+            cursor: 'pointer',
+            padding: '8px 20px',
+          }}
+        >
+          <span style={{ fontSize: '16px' }}>&larr;</span> Portfolio
+        </button>
+        <span style={{
+          fontFamily: '"Cormorant Garamond", serif',
+          fontSize: 'clamp(18px, 3vw, 24px)',
+          fontWeight: 300,
+          letterSpacing: '2px',
+          color: '#1A3A3A',
+        }}>
+          Meadowcraft
+        </span>
+      </nav>
+
+      {/* Hero Section */}
+      <section style={{
+        maxWidth: 'min(1200px, 90vw)',
+        margin: '0 auto',
+        paddingTop: 'clamp(100px, 12vh, 140px)',
+        paddingBottom: 'clamp(40px, 6vh, 80px)',
+        paddingLeft: 'clamp(16px, 4vw, 32px)',
+        paddingRight: 'clamp(16px, 4vw, 32px)',
+      }}>
+        <div className="project-hero">
+          {/* Left: Project Info */}
+          <div className="project-hero-info" style={{
+            opacity: isLoaded ? 1 : 0,
+            transform: isLoaded ? 'translateY(0)' : 'translateY(30px)',
+            transition: 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.2s',
+          }}>
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '6px 14px',
+              background: colors.green.bg,
+              borderRadius: '20px',
+              marginBottom: 'clamp(16px, 2vw, 24px)',
+            }}>
+              <span style={{ fontSize: '14px' }}>&#10047;</span>
+              <span style={{
+                fontSize: '12px',
+                fontWeight: 600,
+                color: colors.green.text,
+                textTransform: 'uppercase',
+                letterSpacing: '1.5px',
+              }}>
+                Mobile App
+              </span>
+            </div>
+
+            <h1 style={{
+              fontFamily: '"Cormorant Garamond", serif',
+              fontSize: 'clamp(40px, 6vw, 64px)',
+              fontWeight: 300,
+              letterSpacing: '2px',
+              color: '#1A3A3A',
+              margin: '0 0 clamp(12px, 1.5vw, 20px) 0',
+              lineHeight: 1.1,
+            }}>
+              Meadowcraft
+            </h1>
+
+            <div style={{
+              width: '40px',
+              height: '2px',
+              background: `linear-gradient(90deg, ${colors.green.border}, ${colors.orange.border})`,
+              borderRadius: '2px',
+              marginBottom: 'clamp(12px, 1.5vw, 20px)',
+            }} />
+
+            <p style={{
+              fontFamily: '"Cormorant Garamond", serif',
+              fontSize: 'clamp(18px, 2vw, 24px)',
+              fontStyle: 'italic',
+              color: '#8B7355',
+              margin: '0 0 clamp(20px, 3vw, 32px) 0',
+              lineHeight: 1.4,
+            }}>
+              Your personal skincare routine companion
+            </p>
+
+            <p style={{
+              fontSize: 'clamp(14px, 1.2vw, 17px)',
+              lineHeight: 1.8,
+              color: '#2D5A5A',
+              opacity: 0.85,
+              margin: '0 0 clamp(24px, 3vw, 36px) 0',
+              maxWidth: '480px',
+            }}>
+              An AI-powered skincare companion built on a multi-agent architecture. Features an
+              AI dermatologist that analyzes your routine and recommends products, intelligent
+              routine generation, product evaluation with ingredient analysis, and personalized
+              beauty insights — all orchestrated through durable agent pipelines with RAG-powered
+              knowledge retrieval.
+            </p>
+
+            {/* Tech Stack */}
+            <div style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '10px',
+              marginBottom: 'clamp(24px, 3vw, 36px)',
+            }}>
+              {techStack.map((tech, i) => (
+                <span key={tech} className="project-tech-tag" style={{
+                  padding: '6px 16px',
+                  background: 'rgba(253, 246, 240, 0.8)',
+                  border: '1px solid rgba(91, 138, 114, 0.2)',
+                  borderRadius: '20px',
+                  fontSize: '13px',
+                  fontWeight: 500,
+                  color: '#2D5A5A',
+                  opacity: isLoaded ? 1 : 0,
+                  transform: isLoaded ? 'translateY(0)' : 'translateY(10px)',
+                  transition: `all 0.5s ease ${0.5 + i * 0.1}s`,
+                }}>
+                  {tech}
+                </span>
+              ))}
+            </div>
+
+            {/* Links */}
+            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+              <a
+                href="https://github.com/ayshilal/Meadowcraft"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '10px 24px',
+                  background: '#1A3A3A',
+                  color: '#FDF6F0',
+                  borderRadius: '24px',
+                  textDecoration: 'none',
+                  fontSize: '14px',
+                  fontWeight: 500,
+                  transition: 'all 0.3s ease',
+                }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                GitHub
+              </a>
+            </div>
+          </div>
+
+          {/* Right: Phone Mockup */}
+          <div className="project-hero-phone" style={{
+            opacity: isLoaded ? 1 : 0,
+            transform: isLoaded ? 'translateY(0) scale(1)' : 'translateY(40px) scale(0.95)',
+            transition: 'all 1s cubic-bezier(0.4, 0, 0.2, 1) 0.4s',
+          }}>
+            <div className="phone-frame-small" style={{ width: 'clamp(250px, 28vw, 340px)' }}>
+              <div className="phone-notch" />
+              <div className="phone-screen">
+                <video
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  src="/videos/AI_generate_routine_hero.mp4"
+                  style={{ width: '100%', display: 'block' }}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* AI Capabilities */}
+      <section style={{
+        maxWidth: 'min(1200px, 90vw)',
+        margin: '0 auto',
+        paddingBottom: 'clamp(24px, 3vh, 40px)',
+        paddingLeft: 'clamp(16px, 4vw, 32px)',
+        paddingRight: 'clamp(16px, 4vw, 32px)',
+      }}>
+        <div style={{
+          padding: 'clamp(20px, 3vw, 36px)',
+          background: colors.green.bg,
+          borderRadius: '20px',
+          borderLeft: `3px solid ${colors.green.border}`,
+        }}>
+          <p style={{
+            fontSize: '12px',
+            fontWeight: 600,
+            color: colors.green.text,
+            textTransform: 'uppercase',
+            letterSpacing: '2px',
+            margin: '0 0 16px 0',
+          }}>
+            AI Capabilities
+          </p>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))',
+            gap: '8px 32px',
+          }}>
+            {[
+              'AI Dermatologist \u2014 routine analysis & product recommendations',
+              'Intelligent Routine Generation \u2014 personalized morning & evening routines',
+              'Product Evaluation \u2014 ingredient analysis with compatibility scoring',
+              'Beauty Facts & Tips \u2014 RAG-powered skincare knowledge',
+              'Product Check \u2014 evaluates new products against your existing routine',
+            ].map((item, i) => (
+              <p key={i} style={{
+                fontSize: 'clamp(13px, 1.1vw, 15px)',
+                color: '#2D5A5A',
+                margin: '4px 0',
+                lineHeight: 1.6,
+              }}>
+                {'\u2022'} {item}
+              </p>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* App Screens Gallery */}
+      <section style={{
+        maxWidth: 'min(1200px, 90vw)',
+        margin: '0 auto',
+        paddingBottom: 'clamp(60px, 8vh, 100px)',
+        paddingLeft: 'clamp(16px, 4vw, 32px)',
+        paddingRight: 'clamp(16px, 4vw, 32px)',
+      }}>
+        <div style={{
+          textAlign: 'center',
+          marginBottom: 'clamp(32px, 4vw, 56px)',
+          opacity: isLoaded ? 1 : 0,
+          transform: isLoaded ? 'translateY(0)' : 'translateY(20px)',
+          transition: 'all 0.8s ease 0.6s',
+        }}>
+          <span style={{
+            fontSize: '12px',
+            fontWeight: 600,
+            color: colors.green.text,
+            textTransform: 'uppercase',
+            letterSpacing: '2px',
+          }}>
+            &#10043; App in Action
+          </span>
+          <h2 style={{
+            fontFamily: '"Cormorant Garamond", serif',
+            fontSize: 'clamp(28px, 4vw, 40px)',
+            fontWeight: 300,
+            color: '#1A3A3A',
+            margin: '12px 0 0 0',
+          }}>
+            Explore the Screens
+          </h2>
+        </div>
+
+        <div className="gallery-grid">
+          {appScreens.map((screen, i) => (
+            <div key={screen.label} style={{
+              textAlign: 'center',
+              opacity: isLoaded ? 1 : 0,
+              transform: isLoaded ? 'translateY(0)' : 'translateY(30px)',
+              transition: `all 0.6s cubic-bezier(0.4, 0, 0.2, 1) ${0.7 + i * 0.15}s`,
+            }}>
+              <div className="phone-frame-small">
+                <div className="phone-notch" />
+                <div className="phone-screen">
+                  <video
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    src={screen.video}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
+                </div>
+              </div>
+              <p style={{
+                marginTop: '16px',
+                fontSize: 'clamp(13px, 1.1vw, 16px)',
+                fontWeight: 500,
+                color: '#2D5A5A',
+                letterSpacing: '0.5px',
+                marginBottom: '6px',
+              }}>
+                {screen.label}
+              </p>
+              <p style={{
+                fontSize: 'clamp(11px, 0.9vw, 13px)',
+                color: '#2D5A5A',
+                opacity: 0.7,
+                lineHeight: 1.5,
+                margin: 0,
+              }}>
+                {screen.highlight ? screen.desc.split(`**${screen.highlight}**`).reduce((acc, part, i, arr) => {
+                  acc.push(part);
+                  if (i < arr.length - 1) acc.push(<span key={i} style={{ fontWeight: 600, color: '#5B8A72' }}>{screen.highlight}</span>);
+                  return acc;
+                }, []) : screen.desc}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer style={{
+        textAlign: 'center',
+        padding: 'clamp(24px, 4vh, 40px) clamp(16px, 4vw, 32px)',
+        borderTop: '1px solid rgba(91, 138, 114, 0.1)',
+      }}>
+        <p style={{
+          fontSize: 'clamp(11px, 1vw, 15px)',
+          color: '#2D5A5A',
+          opacity: 0.5,
+        }}>
+          &copy; 2025 Ayse Hilal Yalciner
+        </p>
+      </footer>
+    </div>
+  );
+}
 
 
 function Blog({ onNavigate }) {
