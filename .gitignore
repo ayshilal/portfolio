@@ -1,8 +1,10 @@
 # dependencies
 /node_modules
+/learn/node_modules
 
 # production
 /build
+/learn/dist
 
 # misc
 .DS_Store
