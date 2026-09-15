@@ -469,8 +469,8 @@ function Home({ onNavigate }) {
             <a href="mailto:aysehilalyalciner@gmail.com" style={{ color: '#1A3A3A', textDecoration: 'none', opacity: 0.8 }}>
               aysehilalyalciner@gmail.com
             </a>
-            <a href="tel:+14379850691" style={{ color: '#1A3A3A', textDecoration: 'none', opacity: 0.8 }}>
-              (437) 985-0691
+            <a href="tel:+19296780598" style={{ color: '#1A3A3A', textDecoration: 'none', opacity: 0.8 }}>
+              (929) 678-0598
             </a>
             <a href="https://linkedin.com/in/ahyalciner" target="_blank" rel="noopener noreferrer" style={{ color: '#1A3A3A', textDecoration: 'none', opacity: 0.8 }}>
               LinkedIn
