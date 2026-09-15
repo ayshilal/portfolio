@@ -216,7 +216,8 @@ function Home({ onNavigate }) {
     },
     {
       code: 'Data Engineer',
-      name: 'Certified Data Engineer Associate',
+      showCode: false, // full credential name already reads as the title
+      name: 'Data Engineer Associate',
       issuer: 'Databricks',
       year: '2026',
       badge: '/images/cert-databricks-de.png',
@@ -608,14 +609,16 @@ function Home({ onNavigate }) {
                   }}>
                     {cert.name}
                   </p>
-                  <p style={{
-                    fontSize: '12px',
-                    color: '#2D5A5A',
-                    opacity: 0.7,
-                    marginTop: '4px',
-                  }}>
-                    {cert.code}
-                  </p>
+                  {cert.showCode !== false && (
+                    <p style={{
+                      fontSize: '12px',
+                      color: '#2D5A5A',
+                      opacity: 0.7,
+                      marginTop: '4px',
+                    }}>
+                      {cert.code}
+                    </p>
+                  )}
                 </div>
               </>
             );
@@ -626,7 +629,7 @@ function Home({ onNavigate }) {
               background: accent.bg,
               borderLeft: `3px solid ${accent.border}`,
               display: 'flex',
-              alignItems: 'center',
+              alignItems: 'flex-start',
               gap: '16px',
               textDecoration: 'none',
               color: 'inherit',
