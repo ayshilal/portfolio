@@ -2,16 +2,18 @@ import { useState, useEffect } from 'react';
 
 function App() {
   const [currentPage, setCurrentPage] = useState(() => {
-    if (window.location.search.includes('project')) {
+    const params = new URLSearchParams(window.location.search);
+    // ?project — Meadowcraft case study (capabilities + app screen gallery)
+    if (params.has('project')) {
       return 'project';
     }
-    // Secret URL: add ?notes to access blog
-    if (window.location.search.includes('notes')) {
+    // ?demo — Meadowcraft phone-mockup video walkthrough
+    if (params.has('demo')) {
+      return 'demo';
+    }
+    // ?notes — reading notes / blog
+    if (params.has('notes')) {
       return 'blog';
-    }
-    // Secret URL: add ?project to access project page
-    if (window.location.search.includes('project')) {
-      return 'project';
     }
     return 'home';
   });
@@ -20,15 +22,75 @@ function App() {
     return <ProjectDetail onNavigate={setCurrentPage} />;
   }
 
+  if (currentPage === 'demo') {
+    return <ProjectPage onNavigate={setCurrentPage} />;
+  }
+
   if (currentPage === 'blog') {
     return <Blog onNavigate={setCurrentPage} />;
   }
 
-  if (currentPage === 'project') {
-    return <ProjectPage onNavigate={setCurrentPage} />;
+  return <Home onNavigate={setCurrentPage} />;
+}
+
+// Renders the official badge image when present in public/images/.
+// If the file is missing or fails to load, falls back to a drawn plaque
+// so the card never shows a broken image.
+function CertBadge({ cert, accent }) {
+  const [failed, setFailed] = useState(false);
+  const size = 'clamp(64px, 14vw, 84px)';
+
+  if (!failed && cert.badge) {
+    return (
+      <img
+        src={cert.badge}
+        alt={`${cert.issuer} ${cert.name} badge`}
+        onError={() => setFailed(true)}
+        style={{
+          width: size,
+          height: size,
+          objectFit: 'contain',
+          display: 'block',
+          flexShrink: 0,
+        }}
+      />
+    );
   }
 
-  return <Home onNavigate={setCurrentPage} />;
+  return (
+    <div
+      role="img"
+      aria-label={`${cert.issuer} ${cert.name} badge`}
+      style={{
+        width: size,
+        height: size,
+        borderRadius: '50%',
+        flexShrink: 0,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: accent.tag,
+        border: `2px solid ${accent.border}`,
+        color: accent.text,
+        textAlign: 'center',
+        lineHeight: 1.1,
+      }}
+    >
+      <span style={{
+        fontFamily: '"Cormorant Garamond", serif',
+        fontSize: cert.code.length > 8 ? '13px' : '17px',
+        fontWeight: 500,
+        letterSpacing: '0.5px',
+        padding: '0 6px',
+      }}>
+        {cert.code}
+      </span>
+      <span style={{ fontSize: '9px', letterSpacing: '1px', opacity: 0.8, marginTop: '3px' }}>
+        {cert.year}
+      </span>
+    </div>
+  );
 }
 
 function Home({ onNavigate }) {
@@ -67,69 +129,144 @@ function Home({ onNavigate }) {
 
   const experience = [
     {
-      company: 'TD Bank',
-      role: 'IT Developer III / Solutions Developer',
-      period: 'Sep 2021 — Jul 2025',
-      duration: '10 mos Contract / 1 yr 11 mos FTE',
+      company: 'TD Bank Group',
+      role: 'IT Developer III',
+      period: 'Sep 2023 — Jul 2025',
+      duration: 'Toronto, ON',
       color: 'green',
       highlights: [
-        'Worked as Senior .NET developer for Hedge Accounting team, managing 20+ .NET, C#, and SQL-based applications including complex amortization and financial calculation engines',
-        'Collaborated with Finance and Front Office teams to analyze and resolve daily issues reported in financial reports',
-        'Ran static code analysis for .NET applications using Veracode SAST scans and remediated 800+ security vulnerabilities to meet company security standards',
-        'Executed Disaster Recovery (DR) test for production environment to validate failover readiness and ensure uptime for critical financial systems',
-        'Managed relational database server migration, ensuring smooth data migration and system stability during transition',
+        "Responsible for how and when enterprise architecture compliance standards were adopted across the Hedge Accounting team's 20+ C#/.NET ETL pipelines, SQL Server databases and SSIS packages — deciding remediation approach, sequencing and release plan, with delivery tracked at the portfolio level",
+        "Subject matter expert for the TD Securities Hedge Accounting application portfolio — amortization engines, financial calculation systems, post-trade ETL pipelines and mark-to-market / P&L feeds — working directly with Finance and Front Office on enhancements and production issues",
+        'Maintained the integrations feeding trade and market data from Calypso, Murex and Bloomberg into the hedge accounting and mark-to-market / P&L engines, resolving feed and data-flow issues across downstream valuation and reporting systems',
+        'Worked with in-house Quants on IFRS 9 amortization and valuation models, correcting data flow into present-value calculations and representing the team in modelling and audit meetings, including EY\u2019s external audit review',
+        'Planned and executed remediation of 800+ Veracode SAST findings across the .NET portfolio, choosing the fix approach and rollout order to meet security requirements without disrupting production',
+        'Ran cross-team Disaster Recovery exercises for production financial systems and led a database server migration end to end with no data loss or unplanned downtime',
+        'Brought the .NET portfolio into compliance with unit-test coverage requirements, holding coverage above 80% under SonarQube using Moq and GitHub Copilot',
       ],
-      tech: ['C#', '.NET', 'SQL Server', 'SSIS', 'SonarQube', 'NUnit', 'Moq', 'Veracode'],
+      tech: ['C#', '.NET', 'SQL Server', 'SSIS', 'Calypso', 'Murex', 'Bloomberg', 'SonarQube', 'Moq', 'Veracode'],
+    },
+    {
+      company: 'TD Bank Group',
+      role: 'Solutions Developer (Contract)',
+      period: 'Nov 2020 — Jun 2021',
+      duration: 'Toronto, ON',
+      color: 'purple',
+      highlights: [
+        "Handled production issues and BAU enhancements across the Hedge Accounting team's .NET / C# / SQL portfolio for post-trade processing",
+      ],
+      tech: ['C#', '.NET', 'SQL Server', 'Post-trade processing'],
     },
     {
       company: 'Verisoft Group',
       role: 'Senior Software Developer',
-      period: 'Mar 2018 — Jun 2019',
-      duration: '',
+      period: 'Mar 2018 — May 2019',
+      duration: 'Istanbul, Turkey',
       color: 'orange',
       highlights: [
-        'Designed and implemented backend with .NET Core 2.2 and developed frontend using Angular 6 and TypeScript for KAD-SIS digital gold management platform for the Ministry of Finance',
-        'Mentored junior team members, providing training on .NET Core 2 fundamentals and code-based migration in Entity Framework (Async programming, OAuth2)',
-        'Utilized Angular libraries including Angular Material, NG Bootstrap, and NGX-Charts to enhance frontend framework and deliver seamless user experience',
-        'Implemented DevOps practices to streamline software delivery processes, enabling CI/CD pipelines for automated publishing',
-        'Leveraged debugging tools in PostgreSQL to build and troubleshoot complex custom functions and trigger functions',
+        'Designed and built the KAD-SIS gold account management platform for the Turkish Ministry of Treasury and Finance, used by the ministry and partner banks (Ziraat, Vakif, Katilim) to monitor nationwide digital-gold transactions and track valuation changes',
+        'Implemented the backend in .NET Core 2.2 over PostgreSQL, with OAuth2 and RESTful APIs consumed by government and banking systems',
+        'Delivered the Angular 8 / TypeScript frontend using Angular Material, NG Bootstrap and NGX-Charts for the reporting dashboards',
+        'Extended the API Gateway for myGini, a US card-linked loyalty platform serving 60M+ cardholders via Visa / Mastercard, with RESTful Web API services and AWS Lambda functions behind real-time cashback offers',
+        'Set up CI/CD pipelines for automated publishing on both platforms and mentored junior developers on .NET Core 2 fundamentals, code-based Entity Framework migrations, async programming and OAuth2',
       ],
-      tech: ['.NET Core 2.2', 'C#', 'Angular 6', 'TypeScript', 'OAuth2', 'PostgreSQL', 'DevOps', 'CI/CD'],
+      tech: ['.NET Core 2.2', 'C#', 'Angular 8', 'TypeScript', 'OAuth2', 'PostgreSQL', 'AWS Lambda', 'CI/CD'],
     },
     {
       company: 'Mlpcare',
       role: 'Software Developer',
       period: 'Apr 2013 — Mar 2018',
-      duration: '',
+      duration: 'Istanbul, Turkey',
       color: 'blue',
       highlights: [
-        'Developed and maintained web, desktop and mobile applications for physicians and nurses, used by 19K health practitioners in 20+ hospitals',
-        'Utilized .NET 4.x MVC, Entity Framework, MongoDB, Elasticsearch and frontend stack including Angular 4, jQuery, HTML5/CSS3',
-        'Wrote unit/integration test cases and automated test cases using Selenium, XUnit and NUnit ensuring reliability and quality of developed software',
-        'Implemented cross-platform mobile application Web APIs and REST-based services using Xamarin.Forms, .NET Entity Framework, and TFS version controlling',
+        'Shipped full-stack features for Reflex, a clinical management system used across 20+ hospitals for patient records and medication data, on web (ASP.NET MVC, Angular 4) and mobile (Xamarin.Forms)',
+        'Released MLPPatient, a Xamarin.Forms app for patients to view medical profiles and test results and book appointments through RESTful Web APIs',
+        'Maintained .NET 4.x MVC web and desktop applications backed by MongoDB, Elasticsearch, Angular 4 and jQuery, serving 19K health practitioners',
+        'Added unit and integration tests with Selenium, xUnit and NUnit',
       ],
-      tech: ['.NET 4.x', 'MVC', 'Entity Framework', 'Angular 4', 'MongoDB', 'Elasticsearch', 'Xamarin'],
+      tech: ['.NET 4.x', 'ASP.NET MVC', 'Entity Framework', 'Angular 4', 'MongoDB', 'Elasticsearch', 'Xamarin.Forms'],
     },
   ];
 
   const education = [
-    { degree: 'M.S. in Electrical and Electronics Engineering', school: 'Istanbul University', note: 'Courses Completed, No Thesis (Incomplete)' },
-    { degree: 'B.S. in Computer Engineering', school: 'Fatih University', note: '' },
+    { degree: 'B.S. Computer Engineering', school: 'Fatih University', note: '2010' },
+    { degree: 'M.S. Electrical & Electronics Engineering', school: 'Istanbul University', note: 'Coursework completed (degree not conferred)' },
   ];
 
-  const certifications = [
+  // Featured credentials. `badge` points at a file in public/images/ — drop the
+  // official PNG from your Credly profile there. If the file is missing the card
+  // falls back to a drawn plaque, so nothing renders broken.
+  const featuredCertifications = [
+    {
+      code: 'AI-102',
+      name: 'Azure AI Engineer Associate',
+      issuer: 'Microsoft',
+      year: '2026',
+      badge: '/images/cert-ai-102.png',
+      verifyUrl: '', // paste your Credly badge link here
+      color: 'blue',
+    },
+    {
+      code: 'AZ-204',
+      name: 'Azure Developer Associate',
+      issuer: 'Microsoft',
+      year: '2026',
+      badge: '/images/cert-az-204.png',
+      verifyUrl: '',
+      color: 'purple',
+    },
+    {
+      code: 'Data Engineer',
+      name: 'Certified Data Engineer Associate',
+      issuer: 'Databricks',
+      year: '2026',
+      badge: '/images/cert-databricks-de.png',
+      verifyUrl: '',
+      color: 'orange',
+    },
+  ];
+
+  const earlierTraining = [
     { name: 'ASP.NET MVC5 Development', issuer: 'Microsoft' },
+    { name: 'Advanced SQL and Tuning', issuer: 'Microsoft' },
     { name: 'Angular 4', issuer: 'Microsoft' },
     { name: 'Angular and TypeScript', issuer: 'TestDome' },
-    { name: 'Advanced SQL and Tuning', issuer: 'Microsoft' },
     { name: 'iOS Devices and Development Workshop', issuer: 'Apple' },
   ];
 
+  const projects = [
+    {
+      key: 'project',
+      glyph: '❀',
+      name: 'Meadowcraft',
+      tagline: 'AI skincare companion',
+      blurb: 'Multi-agent system on the MCP C# SDK — routine analysis, product evaluation and ingredient checks exposed as tools the model calls.',
+      period: 'Jul 2025 — Present',
+      color: 'green',
+      navigable: true,
+    },
+    {
+      key: 'demo',
+      glyph: '◆',
+      name: 'IFRS Valuation Lakehouse',
+      tagline: 'Governed lakehouse on Databricks',
+      blurb: 'A legacy IFRS fair-value pipeline rebuilt with Unity Catalog lineage, provenance carried in the data, and serverless cost attributed per valuation run.',
+      period: 'In progress · 2026',
+      color: 'blue',
+      navigable: false,
+    },
+  ];
+
   const skills = {
-    backend: ['C#', '.NET / .NET Core', 'ASP.NET MVC', 'Web API', 'Entity Framework', 'SQL Server', 'PostgreSQL', 'MongoDB', 'Azure', 'AWS Lambda'],
-    frontend: ['Angular (4-7+)', 'TypeScript', 'HTML5', 'CSS3', 'Angular Material', 'jQuery'],
-    tools: ['CI/CD', 'DevOps', 'Veracode', 'SonarQube', 'NUnit', 'XUnit', 'Selenium', 'Git', 'TFS'],
+    ai: ['Azure OpenAI', 'Azure AI Search', 'RAG pipelines', 'Multi-agent systems', 'MCP C# SDK', 'Semantic Kernel', 'Prompt engineering', 'Token-level cost tracking', 'GitHub Copilot', 'Claude Code'],
+    data: ['Azure Databricks', 'PySpark', 'Delta Lake', 'Unity Catalog', 'Lakehouse & medallion', 'OpenLineage', 'SQL Server', 'SSIS', 'ETL', 'Query tuning'],
+    backend: ['C#', 'Python', 'SQL', '.NET 9 / .NET Core', 'ASP.NET Core Web API', '.NET Aspire', 'Entity Framework Core', 'Microservices', 'OAuth2'],
+    cloud: ['Azure Functions', 'Service Bus', 'Cosmos DB', 'Azure PostgreSQL', 'AI Foundry', 'AD B2C', 'App Service', 'Container Registry', 'AWS Lambda'],
+    frontend: ['Angular 16 / 19', 'TypeScript', 'Ionic', 'Angular Material'],
+    domain: ['Calypso', 'Murex', 'FIX protocol', 'Bloomberg market data', 'Post-trade processing', 'Hedge accounting', 'Amortization', 'IFRS 9', 'Mark-to-market / P&L'],
+    devops: ['Git', 'Azure DevOps', 'GitLab CI/CD', 'Docker', 'Terraform', 'Prometheus', 'Grafana', 'xUnit', 'NUnit', 'Moq', 'Selenium', 'SonarQube', 'Veracode'],
   };
+
+  const skillCategories = ['All', 'AI', 'Data', 'Backend', 'Cloud', 'Frontend', 'Domain', 'DevOps'];
 
   const colors = {
     green: { bg: 'rgba(91, 138, 114, 0.1)', border: '#5B8A72', tag: 'rgba(91, 138, 114, 0.25)', text: '#5B8A72' },
@@ -181,7 +318,7 @@ function Home({ onNavigate }) {
           AYSE
         </button>
         <div style={{ display: 'flex', gap: 'clamp(16px, 3vw, 32px)', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-          {['About', 'Experience', 'Skills', 'Contact'].map((item) => (
+          {['About', 'Certifications', 'Projects', 'Experience', 'Skills', 'Contact'].map((item) => (
             <a
               key={item}
               href={`#${item.toLowerCase()}`}
@@ -238,7 +375,7 @@ function Home({ onNavigate }) {
             marginBottom: '16px',
             opacity: 0.7,
           }}>
-            Full Stack Engineer
+            Senior Software Engineer · Data &amp; AI Platform
           </p>
 
           <div style={{ display: 'inline-block' }}>
@@ -283,10 +420,23 @@ function Home({ onNavigate }) {
             maxWidth: '600px',
             lineHeight: 1.8,
           }}>
-            8+ years of experience designing, building, and maintaining scalable web applications. 
-            Strong expertise in back-end development using C#, .NET, .NET Core, and cloud-native 
-            services on Azure, with hands-on experience in PostgreSQL, MongoDB, and serverless 
-            architectures.
+            I build data and AI systems for regulated finance, where every reported figure has to be
+            explainable and every run reproducible. Nine years of enterprise .NET across hedge accounting,
+            post-trade ETL, valuation and mark-to-market / P&amp;L systems at TD — delivered under audit and
+            change control — now applied to governed data platform and AI work on Azure and Databricks,
+            where lineage, reconciliation and cost are tracked per run.
+          </p>
+
+          <p style={{
+            fontSize: '14px',
+            fontWeight: 300,
+            color: '#2D5A5A',
+            marginBottom: '40px',
+            maxWidth: '600px',
+            lineHeight: 1.7,
+            opacity: 0.75,
+          }}>
+            Toronto, ON · Canadian citizen
           </p>
 
           {/* Tech Pills */}
@@ -296,7 +446,7 @@ function Home({ onNavigate }) {
             marginBottom: '40px',
             flexWrap: 'wrap',
           }}>
-            {['.NET', 'Azure', 'Angular', 'C#', 'SQL Server'].map((tech) => (
+            {['Azure AI', 'Databricks', 'PySpark', '.NET', 'C#'].map((tech) => (
               <span key={tech} style={{
                 padding: '10px 20px',
                 borderRadius: '50px',
@@ -319,8 +469,8 @@ function Home({ onNavigate }) {
             <a href="mailto:aysehilalyalciner@gmail.com" style={{ color: '#1A3A3A', textDecoration: 'none', opacity: 0.8 }}>
               aysehilalyalciner@gmail.com
             </a>
-            <a href="tel:+19296780598" style={{ color: '#1A3A3A', textDecoration: 'none', opacity: 0.8 }}>
-              (929) 678-0598
+            <a href="tel:+14379850691" style={{ color: '#1A3A3A', textDecoration: 'none', opacity: 0.8 }}>
+              (437) 985-0691
             </a>
             <a href="https://linkedin.com/in/ahyalciner" target="_blank" rel="noopener noreferrer" style={{ color: '#1A3A3A', textDecoration: 'none', opacity: 0.8 }}>
               LinkedIn
@@ -331,53 +481,173 @@ function Home({ onNavigate }) {
             
           </div>
 
-          {/* Featured Project Card */}
-          <div style={{
-            marginTop: '48px',
-            padding: '24px',
-            borderRadius: '20px',
-            background: 'rgba(139, 155, 126, 0.15)',
-            borderLeft: '3px solid #8B9B7E',
-            maxWidth: '400px',
+          {/* Projects */}
+          <div id="projects" style={{
+            marginTop: '56px',
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+            gap: '16px',
+            maxWidth: '760px',
           }}>
-            <p style={{
-              fontSize: '11px',
-              color: '#2D5A5A',
-              marginBottom: '8px',
-              textTransform: 'uppercase',
-              letterSpacing: '1px',
-              opacity: 0.7,
-            }}>
-              Featured Project
-            </p>
-            <button 
-              onClick={() => onNavigate('project')}
-              style={{
-                fontFamily: '"Cormorant Garamond", serif',
-                fontSize: '22px',
-                fontWeight: 400,
-                color: '#1A3A3A',
-                textDecoration: 'none',
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                padding: 0,
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-              }}
-            >
-              <span>❀</span> Meadowcraft →
-            </button>
-            <p style={{
-              fontSize: '13px',
-              color: '#2D5A5A',
-              marginTop: '8px',
-              opacity: 0.7,
-            }}>
-              Skincare routine companion app
-            </p>
+            {projects.map((project) => {
+              const c = colors[project.color];
+              const Heading = project.navigable ? 'button' : 'div';
+              return (
+                <div key={project.key} style={{
+                  padding: '24px',
+                  borderRadius: '20px',
+                  background: c.bg,
+                  borderLeft: `3px solid ${c.border}`,
+                }}>
+                  <p style={{
+                    fontSize: '11px',
+                    color: '#2D5A5A',
+                    marginBottom: '8px',
+                    letterSpacing: '1px',
+                    opacity: 0.7,
+                  }}>
+                    {project.period}
+                  </p>
+                  <Heading
+                    {...(project.navigable ? { onClick: () => onNavigate(project.key) } : {})}
+                    style={{
+                      fontFamily: '"Cormorant Garamond", serif',
+                      fontSize: '22px',
+                      fontWeight: 400,
+                      color: '#1A3A3A',
+                      textAlign: 'left',
+                      background: 'none',
+                      border: 'none',
+                      cursor: project.navigable ? 'pointer' : 'default',
+                      padding: 0,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                    }}
+                  >
+                    <span aria-hidden="true" style={{ color: c.text }}>{project.glyph}</span>
+                    {project.name}{project.navigable ? ' →' : ''}
+                  </Heading>
+                  <p style={{
+                    fontSize: '13px',
+                    color: '#2D5A5A',
+                    marginTop: '8px',
+                    fontWeight: 500,
+                  }}>
+                    {project.tagline}
+                  </p>
+                  <p style={{
+                    fontSize: '13px',
+                    color: '#2D5A5A',
+                    marginTop: '8px',
+                    opacity: 0.75,
+                    lineHeight: 1.6,
+                  }}>
+                    {project.blurb}
+                  </p>
+                </div>
+              );
+            })}
           </div>
+        </div>
+      </section>
+
+      {/* Featured Certifications */}
+      <section id="certifications" style={{
+        padding: '64px 32px',
+        maxWidth: '900px',
+        margin: '0 auto',
+      }}>
+        <h2 style={{
+          fontFamily: '"Cormorant Garamond", serif',
+          fontSize: '32px',
+          fontWeight: 300,
+          letterSpacing: '4px',
+          marginBottom: '16px',
+          textAlign: 'center',
+          color: '#1A3A3A',
+        }}>
+          CERTIFICATIONS
+        </h2>
+        <p style={{
+          fontSize: '12px',
+          color: '#2D5A5A',
+          opacity: 0.6,
+          textAlign: 'center',
+          marginBottom: '48px',
+          letterSpacing: '1px',
+        }}>
+          earned during full-time upskilling in Azure AI and data engineering, since July 2025
+        </p>
+
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+          gap: '16px',
+        }}>
+          {featuredCertifications.map((cert) => {
+            const accent = colors[cert.color];
+            const card = (
+              <>
+                <CertBadge cert={cert} accent={accent} />
+                <div style={{ minWidth: 0 }}>
+                  <p style={{
+                    fontSize: '11px',
+                    color: accent.text,
+                    letterSpacing: '1px',
+                    marginBottom: '6px',
+                    fontWeight: 500,
+                  }}>
+                    {cert.issuer} · {cert.year}
+                  </p>
+                  <p style={{
+                    fontSize: '15px',
+                    fontWeight: 500,
+                    color: '#1A3A3A',
+                    lineHeight: 1.4,
+                  }}>
+                    {cert.name}
+                  </p>
+                  <p style={{
+                    fontSize: '12px',
+                    color: '#2D5A5A',
+                    opacity: 0.7,
+                    marginTop: '4px',
+                  }}>
+                    {cert.code}
+                  </p>
+                </div>
+              </>
+            );
+
+            const cardStyle = {
+              padding: '20px',
+              borderRadius: '20px',
+              background: accent.bg,
+              borderLeft: `3px solid ${accent.border}`,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '16px',
+              textDecoration: 'none',
+              color: 'inherit',
+            };
+
+            return cert.verifyUrl ? (
+              <a
+                key={cert.code}
+                href={cert.verifyUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={cardStyle}
+              >
+                {card}
+              </a>
+            ) : (
+              <div key={cert.code} style={cardStyle}>
+                {card}
+              </div>
+            );
+          })}
         </div>
       </section>
 
@@ -596,7 +866,7 @@ function Home({ onNavigate }) {
           justifyContent: 'center',
           flexWrap: 'wrap',
         }}>
-          {['All', 'Backend', 'Frontend', 'Tools'].map((cat) => (
+          {skillCategories.map((cat) => (
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
@@ -617,8 +887,8 @@ function Home({ onNavigate }) {
         </div>
 
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'center' }}>
-          {(activeCategory === 'All' 
-            ? [...skills.backend, ...skills.frontend, ...skills.tools]
+          {(activeCategory === 'All'
+            ? Object.values(skills).flat()
             : skills[activeCategory.toLowerCase()]
           ).map((skill) => (
             <span key={skill} style={{
@@ -634,7 +904,7 @@ function Home({ onNavigate }) {
         </div>
       </section>
 
-      {/* Certifications */}
+      {/* Earlier Training */}
       <section style={{
         padding: '80px 32px',
         maxWidth: '900px',
@@ -649,7 +919,7 @@ function Home({ onNavigate }) {
           textAlign: 'center',
           color: '#1A3A3A',
         }}>
-          CERTIFICATIONS
+          EARLIER TRAINING
         </h2>
         <p style={{
           fontSize: '12px',
@@ -659,7 +929,7 @@ function Home({ onNavigate }) {
           marginBottom: '48px',
           letterSpacing: '1px',
         }}>
-          professional credentials
+          courses &amp; workshops
         </p>
 
         <div style={{
@@ -667,7 +937,7 @@ function Home({ onNavigate }) {
           gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
           gap: '16px',
         }}>
-          {certifications.map((cert, i) => (
+          {earlierTraining.map((cert, i) => (
             <div key={i} style={{
               padding: '20px',
               borderRadius: '20px',
