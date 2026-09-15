@@ -437,7 +437,6 @@ function Home({ onNavigate }) {
             lineHeight: 1.7,
             opacity: 0.75,
           }}>
-            Toronto, ON · Canadian citizen
           </p>
 
           {/* Tech Pills */}
