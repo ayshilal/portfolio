@@ -11,9 +11,13 @@ function App() {
     if (params.has('demo')) {
       return 'demo';
     }
-    // ?notes — reading notes / blog
-    if (params.has('notes')) {
+    // ?blog — public blog (?blog=<slug> opens a post)
+    if (params.has('blog')) {
       return 'blog';
+    }
+    // ?notes — study notes (hidden)
+    if (params.has('notes')) {
+      return 'notes';
     }
     return 'home';
   });
@@ -27,6 +31,10 @@ function App() {
   }
 
   if (currentPage === 'blog') {
+    return <BlogPage onNavigate={setCurrentPage} />;
+  }
+
+  if (currentPage === 'notes') {
     return <Blog onNavigate={setCurrentPage} />;
   }
 
@@ -105,7 +113,7 @@ function Home({ onNavigate }) {
     const handleKeyPress = (e) => {
       keys += e.key.toLowerCase();
       if (keys.includes('notes')) {
-        onNavigate('blog');
+        onNavigate('notes');
         keys = '';
       }
       // Reset after 2 seconds of no typing
@@ -335,9 +343,11 @@ function Home({ onNavigate }) {
             </a>
           ))}
           <button
-            onClick={() => onNavigate('blog')}
+            onClick={() => {
+              window.history.pushState(null, '', '?blog');
+              onNavigate('blog');
+            }}
             style={{
-              display: 'none',
               color: '#2D5A5A',
               background: 'none',
               border: 'none',
@@ -2638,5 +2648,214 @@ Track your morning and evening routines, catalog your products by type, and neve
   );
 }
 
+
+
+// ─── Public blog ────────────────────────────────────────────────────────────
+// To add a post, add an object to blogPosts (newest first).
+// body is a list of blocks: { p }, { h }, { list: [...] }, { code, lang }, { quote }
+const blogPosts = [];
+
+const blogTagColors = {
+  AI: '#9370A5',
+  Data: '#6B8FAD',
+  '.NET': '#5B8A72',
+  Azure: '#6B8FAD',
+  Career: '#E07850',
+};
+
+function formatPostDate(iso) {
+  return new Date(iso + 'T00:00:00').toLocaleDateString('en-CA', {
+    year: 'numeric', month: 'long', day: 'numeric',
+  });
+}
+
+function readingTime(post) {
+  const words = post.body
+    .map((b) => b.p || b.h || b.quote || b.code || (b.list || []).join(' ') || '')
+    .join(' ')
+    .split(/\s+/).filter(Boolean).length;
+  return Math.max(1, Math.round(words / 220));
+}
+
+function BlogPage({ onNavigate }) {
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [activeSlug, setActiveSlug] = useState(() => {
+    const slug = new URLSearchParams(window.location.search).get('blog');
+    return blogPosts.some((p) => p.slug === slug) ? slug : null;
+  });
+  const [activeTag, setActiveTag] = useState('All');
+
+  useEffect(() => { setIsLoaded(true); }, []);
+  useEffect(() => { window.scrollTo(0, 0); }, [activeSlug]);
+
+  useEffect(() => {
+    const onPop = () => {
+      const params = new URLSearchParams(window.location.search);
+      if (!params.has('blog')) { onNavigate('home'); return; }
+      const slug = params.get('blog');
+      setActiveSlug(blogPosts.some((p) => p.slug === slug) ? slug : null);
+    };
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, [onNavigate]);
+
+  const openPost = (slug) => {
+    window.history.pushState(null, '', slug ? `?blog=${slug}` : '?blog');
+    setActiveSlug(slug);
+  };
+
+  const goHome = () => {
+    window.history.pushState(null, '', window.location.pathname);
+    onNavigate('home');
+  };
+
+  const tags = ['All', ...Array.from(new Set(blogPosts.flatMap((p) => p.tags)))];
+  const visible = activeTag === 'All' ? blogPosts : blogPosts.filter((p) => p.tags.includes(activeTag));
+  const post = blogPosts.find((p) => p.slug === activeSlug);
+
+  const serif = '"Cormorant Garamond", serif';
+  const teal = '#1A3A3A';
+  const softTeal = '#2D5A5A';
+
+  const Tag = ({ name }) => (
+    <span style={{
+      fontSize: '11px', letterSpacing: '1px', textTransform: 'uppercase',
+      color: blogTagColors[name] || softTeal, fontWeight: 500,
+    }}>{name}</span>
+  );
+
+  const renderBlock = (b, i) => {
+    if (b.h) return (
+      <h2 key={i} style={{ fontFamily: serif, fontSize: '28px', fontWeight: 400, margin: '48px 0 16px', color: teal }}>{b.h}</h2>
+    );
+    if (b.list) return (
+      <ul key={i} style={{ margin: '0 0 24px', paddingLeft: '20px' }}>
+        {b.list.map((item, j) => <li key={j} style={{ marginBottom: '8px' }}>{item}</li>)}
+      </ul>
+    );
+    if (b.code) return (
+      <pre key={i} style={{
+        background: teal, color: '#FDF6F0', padding: '20px', borderRadius: '8px',
+        overflowX: 'auto', fontSize: '13px', lineHeight: 1.6, margin: '0 0 24px',
+        fontFamily: '"SFMono-Regular", Consolas, Menlo, monospace',
+      }}><code>{b.code}</code></pre>
+    );
+    if (b.quote) return (
+      <blockquote key={i} style={{
+        borderLeft: '2px solid #E07850', paddingLeft: '20px', margin: '0 0 24px',
+        fontFamily: serif, fontSize: '22px', fontStyle: 'italic', color: softTeal,
+      }}>{b.quote}</blockquote>
+    );
+    return <p key={i} style={{ margin: '0 0 24px' }}>{b.p}</p>;
+  };
+
+  return (
+    <div style={{
+      minHeight: '100vh', background: '#FDF6F0', color: teal,
+      fontFamily: '"Inter", sans-serif',
+      opacity: isLoaded ? 1 : 0, transition: 'opacity 0.5s ease',
+    }}>
+      <nav style={{
+        position: 'sticky', top: 0, zIndex: 100,
+        padding: '20px clamp(16px, 4vw, 32px)',
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        background: 'rgba(253, 246, 240, 0.95)', backdropFilter: 'blur(10px)',
+      }}>
+        <button onClick={goHome} style={{
+          fontFamily: serif, fontSize: 'clamp(18px, 4vw, 24px)', fontWeight: 300,
+          letterSpacing: 'clamp(2px, 0.5vw, 4px)', color: teal,
+          background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+        }}>AYSE</button>
+        <div style={{ display: 'flex', gap: '24px' }}>
+          {post && (
+            <button onClick={() => openPost(null)} style={navLinkStyle}>All posts</button>
+          )}
+          <button onClick={goHome} style={navLinkStyle}>Portfolio</button>
+        </div>
+      </nav>
+
+      {post ? (
+        <article style={{ maxWidth: '680px', margin: '0 auto', padding: '64px 16px 120px' }}>
+          <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', marginBottom: '20px' }}>
+            {post.tags.map((t) => <Tag key={t} name={t} />)}
+          </div>
+          <h1 style={{
+            fontFamily: serif, fontSize: 'clamp(34px, 6vw, 48px)', fontWeight: 300,
+            lineHeight: 1.15, marginBottom: '20px',
+          }}>{post.title}</h1>
+          <p style={{ fontSize: '13px', color: softTeal, opacity: 0.7, marginBottom: '56px' }}>
+            {formatPostDate(post.date)} · {readingTime(post)} min read
+          </p>
+          <div style={{ fontSize: '17px', lineHeight: 1.8, color: softTeal, fontWeight: 300 }}>
+            {post.body.map(renderBlock)}
+          </div>
+          <div style={{ borderTop: '1px solid rgba(26, 58, 58, 0.12)', marginTop: '64px', paddingTop: '32px' }}>
+            <button onClick={() => openPost(null)} style={{ ...navLinkStyle, fontSize: '14px' }}>← Back to all posts</button>
+          </div>
+        </article>
+      ) : (
+        <main style={{ maxWidth: '760px', margin: '0 auto', padding: '64px 16px 120px' }}>
+          <h1 style={{
+            fontFamily: serif, fontSize: 'clamp(40px, 8vw, 56px)', fontWeight: 300,
+            letterSpacing: '6px', textAlign: 'center', marginBottom: '16px',
+          }}>BLOG</h1>
+          <p style={{
+            textAlign: 'center', fontSize: '14px', color: softTeal, opacity: 0.7,
+            marginBottom: '48px', letterSpacing: '0.5px',
+          }}>
+            notes from building data and AI systems
+          </p>
+
+          {tags.length > 2 && (
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '48px' }}>
+              {tags.map((t) => (
+                <button key={t} onClick={() => setActiveTag(t)} style={{
+                  padding: '6px 14px', borderRadius: '999px', fontSize: '12px', cursor: 'pointer',
+                  border: `1px solid ${activeTag === t ? teal : 'rgba(26, 58, 58, 0.2)'}`,
+                  background: activeTag === t ? teal : 'transparent',
+                  color: activeTag === t ? '#FDF6F0' : softTeal,
+                }}>{t}</button>
+              ))}
+            </div>
+          )}
+
+          {visible.length === 0 ? (
+            <p style={{
+              textAlign: 'center', fontFamily: serif, fontSize: '22px', fontStyle: 'italic',
+              color: softTeal, opacity: 0.7, padding: '48px 0',
+            }}>First posts coming soon.</p>
+          ) : (
+            visible.map((p) => (
+              <button key={p.slug} onClick={() => openPost(p.slug)} className="blog-card" style={{
+                display: 'block', width: '100%', textAlign: 'left', cursor: 'pointer',
+                background: 'none', border: 'none', borderTop: '1px solid rgba(26, 58, 58, 0.12)',
+                padding: '32px 0', color: teal, font: 'inherit',
+              }}>
+                <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', marginBottom: '12px', alignItems: 'baseline' }}>
+                  <span style={{ fontSize: '12px', color: softTeal, opacity: 0.6 }}>{formatPostDate(p.date)}</span>
+                  {p.tags.map((t) => <Tag key={t} name={t} />)}
+                </div>
+                <h2 style={{ fontFamily: serif, fontSize: 'clamp(24px, 4vw, 30px)', fontWeight: 400, marginBottom: '10px', lineHeight: 1.25 }}>
+                  {p.title}
+                </h2>
+                <p style={{ fontSize: '15px', lineHeight: 1.7, color: softTeal, opacity: 0.85, fontWeight: 300 }}>
+                  {p.excerpt}
+                </p>
+                <span style={{ display: 'inline-block', marginTop: '12px', fontSize: '13px', color: '#E07850' }}>
+                  Read · {readingTime(p)} min →
+                </span>
+              </button>
+            ))
+          )}
+        </main>
+      )}
+    </div>
+  );
+}
+
+const navLinkStyle = {
+  color: '#2D5A5A', background: 'none', border: 'none', cursor: 'pointer',
+  fontSize: '14px', fontWeight: 400, opacity: 0.8, padding: 0, fontFamily: 'inherit',
+};
 
 export default App;
