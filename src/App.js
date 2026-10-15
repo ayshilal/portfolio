@@ -2651,16 +2651,26 @@ Track your morning and evening routines, catalog your products by type, and neve
 
 
 // ─── Public blog ────────────────────────────────────────────────────────────
-// To add a post, add an object to blogPosts (newest first).
-// body is a list of blocks: { p }, { h }, { list: [...] }, { code, lang }, { quote }
-const blogPosts = [];
+// To add a post: put the markdown in public/posts/<slug>.md (without the
+// title line) and add an entry below, newest first.
+const blogPosts = [
+  {
+    slug: 'azure-databricks-costs',
+    title: 'How to See What Azure Databricks Is Costing You',
+    subtitle: 'A step-by-step guide for people doing this for the first time.',
+    date: '2026-10-15',
+    tags: ['Azure', 'Data'],
+    minutes: 5,
+    excerpt: 'Azure shows a single "Azure Databricks" line on your bill. Here is how to get the per-product breakdown, including the admin-login snag that blocks personal Microsoft accounts.',
+  },
+];
 
 const blogTagColors = {
   AI: '#9370A5',
   Data: '#6B8FAD',
   '.NET': '#5B8A72',
-  Azure: '#6B8FAD',
-  Career: '#E07850',
+  Azure: '#E07850',
+  Career: '#5B8A72',
 };
 
 function formatPostDate(iso) {
@@ -2669,12 +2679,92 @@ function formatPostDate(iso) {
   });
 }
 
-function readingTime(post) {
-  const words = post.body
-    .map((b) => b.p || b.h || b.quote || b.code || (b.list || []).join(' ') || '')
-    .join(' ')
-    .split(/\s+/).filter(Boolean).length;
-  return Math.max(1, Math.round(words / 220));
+// Minimal markdown: ## / ### headings, paragraphs, - and 1. lists, > notes,
+// ``` code fences, --- rules; inline **bold**, *italic*, `code`, [links](url).
+function renderInline(text, keyBase) {
+  const out = [];
+  const re = /(\*\*[^*]+\*\*|`[^`]+`|\[[^\]]+\]\([^)]+\)|https?:\/\/[^\s)]+|\*[^*]+\*)/g;
+  let last = 0; let m; let k = 0;
+  while ((m = re.exec(text))) {
+    if (m.index > last) out.push(text.slice(last, m.index));
+    const t = m[0]; const key = `${keyBase}-${k++}`;
+    if (t.startsWith('**')) out.push(<strong key={key} style={{ fontWeight: 500, color: '#1A3A3A' }}>{renderInline(t.slice(2, -2), key)}</strong>);
+    else if (t.startsWith('`')) out.push(<code key={key} style={{ fontFamily: '"SFMono-Regular", Consolas, Menlo, monospace', fontSize: '0.85em', background: 'rgba(26, 58, 58, 0.07)', padding: '2px 6px', borderRadius: '4px', wordBreak: 'break-word' }}>{t.slice(1, -1)}</code>);
+    else if (t.startsWith('[')) {
+      const [, label, href] = t.match(/\[([^\]]+)\]\(([^)]+)\)/);
+      out.push(<a key={key} href={href} target="_blank" rel="noopener noreferrer" style={{ color: '#E07850' }}>{label}</a>);
+    } else if (t.startsWith('http')) out.push(<a key={key} href={t} target="_blank" rel="noopener noreferrer" style={{ color: '#E07850', wordBreak: 'break-all' }}>{t}</a>);
+    else out.push(<em key={key}>{renderInline(t.slice(1, -1), key)}</em>);
+    last = m.index + t.length;
+  }
+  if (last < text.length) out.push(text.slice(last));
+  return out;
+}
+
+function renderMarkdown(md) {
+  const lines = md.replace(/\r/g, '').split('\n');
+  const blocks = [];
+  let i = 0;
+  const isSpecial = (l) => /^(#{2,3} |```|> |- |\d+\. |---\s*$)/.test(l) || l.trim() === '';
+  while (i < lines.length) {
+    const line = lines[i];
+    if (line.trim() === '') { i++; continue; }
+    if (line.startsWith('```')) {
+      const buf = []; i++;
+      while (i < lines.length && !lines[i].startsWith('```')) buf.push(lines[i++]);
+      i++;
+      blocks.push({ type: 'code', text: buf.join('\n') });
+    } else if (/^#{2,3} /.test(line)) {
+      blocks.push({ type: line.startsWith('###') ? 'h3' : 'h2', text: line.replace(/^#+ /, '') });
+      i++;
+    } else if (/^---\s*$/.test(line)) {
+      blocks.push({ type: 'hr' }); i++;
+    } else if (line.startsWith('> ')) {
+      const buf = [];
+      while (i < lines.length && lines[i].startsWith('>')) buf.push(lines[i++].replace(/^>\s?/, ''));
+      blocks.push({ type: 'note', text: buf.join(' ') });
+    } else if (/^(- |\d+\. )/.test(line)) {
+      const ordered = /^\d+\. /.test(line); const items = [];
+      while (i < lines.length && (ordered ? /^\d+\. /.test(lines[i]) : lines[i].startsWith('- '))) {
+        items.push(lines[i++].replace(/^(- |\d+\. )/, ''));
+      }
+      blocks.push({ type: ordered ? 'ol' : 'ul', items });
+    } else {
+      const buf = [];
+      while (i < lines.length && !isSpecial(lines[i])) buf.push(lines[i++]);
+      blocks.push({ type: 'p', text: buf.join(' ') });
+    }
+  }
+
+  const serif = '"Cormorant Garamond", serif';
+  return blocks.map((b, n) => {
+    const key = `b${n}`;
+    switch (b.type) {
+      case 'h2': return <h2 key={key} style={{ fontFamily: serif, fontSize: 'clamp(26px, 4.5vw, 30px)', fontWeight: 400, lineHeight: 1.25, margin: '8px 0 20px', color: '#1A3A3A' }}>{renderInline(b.text, key)}</h2>;
+      case 'h3': return <h3 key={key} style={{ fontSize: '17px', fontWeight: 500, margin: '32px 0 12px', color: '#1A3A3A' }}>{renderInline(b.text, key)}</h3>;
+      case 'hr': return <hr key={key} style={{ border: 'none', borderTop: '1px solid rgba(26, 58, 58, 0.12)', margin: '48px 0' }} />;
+      case 'code': return (
+        <pre key={key} style={{ background: '#1A3A3A', color: '#FDF6F0', padding: '20px', borderRadius: '8px', overflowX: 'auto', fontSize: '13px', lineHeight: 1.6, margin: '0 0 24px', fontFamily: '"SFMono-Regular", Consolas, Menlo, monospace' }}>
+          <code>{b.text}</code>
+        </pre>
+      );
+      case 'note': return (
+        <aside key={key} style={{ background: 'rgba(224, 120, 80, 0.08)', borderLeft: '2px solid #E07850', padding: '14px 18px', borderRadius: '0 6px 6px 0', margin: '0 0 24px', fontSize: '15px', lineHeight: 1.7 }}>
+          {renderInline(b.text, key)}
+        </aside>
+      );
+      case 'ul':
+      case 'ol': {
+        const Tag = b.type;
+        return (
+          <Tag key={key} style={{ margin: '0 0 24px', paddingLeft: '24px' }}>
+            {b.items.map((it, j) => <li key={j} style={{ marginBottom: '8px', paddingLeft: '4px' }}>{renderInline(it, `${key}-${j}`)}</li>)}
+          </Tag>
+        );
+      }
+      default: return <p key={key} style={{ margin: '0 0 24px' }}>{renderInline(b.text, key)}</p>;
+    }
+  });
 }
 
 function BlogPage({ onNavigate }) {
@@ -2684,9 +2774,21 @@ function BlogPage({ onNavigate }) {
     return blogPosts.some((p) => p.slug === slug) ? slug : null;
   });
   const [activeTag, setActiveTag] = useState('All');
+  const [postBody, setPostBody] = useState({ slug: null, md: null, error: false });
 
   useEffect(() => { setIsLoaded(true); }, []);
   useEffect(() => { window.scrollTo(0, 0); }, [activeSlug]);
+
+  useEffect(() => {
+    if (!activeSlug) return;
+    let cancelled = false;
+    setPostBody({ slug: activeSlug, md: null, error: false });
+    fetch(`${process.env.PUBLIC_URL}/posts/${activeSlug}.md`)
+      .then((r) => (r.ok ? r.text() : Promise.reject(r.status)))
+      .then((md) => { if (!cancelled) setPostBody({ slug: activeSlug, md, error: false }); })
+      .catch(() => { if (!cancelled) setPostBody({ slug: activeSlug, md: null, error: true }); });
+    return () => { cancelled = true; };
+  }, [activeSlug]);
 
   useEffect(() => {
     const onPop = () => {
@@ -2698,6 +2800,14 @@ function BlogPage({ onNavigate }) {
     window.addEventListener('popstate', onPop);
     return () => window.removeEventListener('popstate', onPop);
   }, [onNavigate]);
+
+  const post = blogPosts.find((p) => p.slug === activeSlug);
+
+  useEffect(() => {
+    const original = document.title;
+    document.title = post ? `${post.title} · Ayse Hilal Yalciner` : 'Blog · Ayse Hilal Yalciner';
+    return () => { document.title = original; };
+  }, [post]);
 
   const openPost = (slug) => {
     window.history.pushState(null, '', slug ? `?blog=${slug}` : '?blog');
@@ -2711,43 +2821,17 @@ function BlogPage({ onNavigate }) {
 
   const tags = ['All', ...Array.from(new Set(blogPosts.flatMap((p) => p.tags)))];
   const visible = activeTag === 'All' ? blogPosts : blogPosts.filter((p) => p.tags.includes(activeTag));
-  const post = blogPosts.find((p) => p.slug === activeSlug);
 
   const serif = '"Cormorant Garamond", serif';
   const teal = '#1A3A3A';
   const softTeal = '#2D5A5A';
 
-  const Tag = ({ name }) => (
+  const TagLabel = ({ name }) => (
     <span style={{
       fontSize: '11px', letterSpacing: '1px', textTransform: 'uppercase',
       color: blogTagColors[name] || softTeal, fontWeight: 500,
     }}>{name}</span>
   );
-
-  const renderBlock = (b, i) => {
-    if (b.h) return (
-      <h2 key={i} style={{ fontFamily: serif, fontSize: '28px', fontWeight: 400, margin: '48px 0 16px', color: teal }}>{b.h}</h2>
-    );
-    if (b.list) return (
-      <ul key={i} style={{ margin: '0 0 24px', paddingLeft: '20px' }}>
-        {b.list.map((item, j) => <li key={j} style={{ marginBottom: '8px' }}>{item}</li>)}
-      </ul>
-    );
-    if (b.code) return (
-      <pre key={i} style={{
-        background: teal, color: '#FDF6F0', padding: '20px', borderRadius: '8px',
-        overflowX: 'auto', fontSize: '13px', lineHeight: 1.6, margin: '0 0 24px',
-        fontFamily: '"SFMono-Regular", Consolas, Menlo, monospace',
-      }}><code>{b.code}</code></pre>
-    );
-    if (b.quote) return (
-      <blockquote key={i} style={{
-        borderLeft: '2px solid #E07850', paddingLeft: '20px', margin: '0 0 24px',
-        fontFamily: serif, fontSize: '22px', fontStyle: 'italic', color: softTeal,
-      }}>{b.quote}</blockquote>
-    );
-    return <p key={i} style={{ margin: '0 0 24px' }}>{b.p}</p>;
-  };
 
   return (
     <div style={{
@@ -2767,9 +2851,7 @@ function BlogPage({ onNavigate }) {
           background: 'none', border: 'none', cursor: 'pointer', padding: 0,
         }}>AYSE</button>
         <div style={{ display: 'flex', gap: '24px' }}>
-          {post && (
-            <button onClick={() => openPost(null)} style={navLinkStyle}>All posts</button>
-          )}
+          {post && <button onClick={() => openPost(null)} style={navLinkStyle}>All posts</button>}
           <button onClick={goHome} style={navLinkStyle}>Portfolio</button>
         </div>
       </nav>
@@ -2777,20 +2859,28 @@ function BlogPage({ onNavigate }) {
       {post ? (
         <article style={{ maxWidth: '680px', margin: '0 auto', padding: '64px 16px 120px' }}>
           <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', marginBottom: '20px' }}>
-            {post.tags.map((t) => <Tag key={t} name={t} />)}
+            {post.tags.map((t) => <TagLabel key={t} name={t} />)}
           </div>
           <h1 style={{
             fontFamily: serif, fontSize: 'clamp(34px, 6vw, 48px)', fontWeight: 300,
-            lineHeight: 1.15, marginBottom: '20px',
+            lineHeight: 1.15, marginBottom: '16px',
           }}>{post.title}</h1>
+          {post.subtitle && (
+            <p style={{ fontFamily: serif, fontSize: '21px', fontStyle: 'italic', color: softTeal, marginBottom: '20px' }}>
+              {post.subtitle}
+            </p>
+          )}
           <p style={{ fontSize: '13px', color: softTeal, opacity: 0.7, marginBottom: '56px' }}>
-            {formatPostDate(post.date)} · {readingTime(post)} min read
+            {formatPostDate(post.date)} · {post.minutes} min read
           </p>
           <div style={{ fontSize: '17px', lineHeight: 1.8, color: softTeal, fontWeight: 300 }}>
-            {post.body.map(renderBlock)}
+            {postBody.slug === post.slug && postBody.md && renderMarkdown(postBody.md)}
+            {postBody.slug === post.slug && postBody.error && (
+              <p>This post couldn't be loaded. Please try again in a moment.</p>
+            )}
           </div>
           <div style={{ borderTop: '1px solid rgba(26, 58, 58, 0.12)', marginTop: '64px', paddingTop: '32px' }}>
-            <button onClick={() => openPost(null)} style={{ ...navLinkStyle, fontSize: '14px' }}>← Back to all posts</button>
+            <button onClick={() => openPost(null)} style={navLinkStyle}>← Back to all posts</button>
           </div>
         </article>
       ) : (
@@ -2826,14 +2916,14 @@ function BlogPage({ onNavigate }) {
             }}>First posts coming soon.</p>
           ) : (
             visible.map((p) => (
-              <button key={p.slug} onClick={() => openPost(p.slug)} className="blog-card" style={{
+              <button key={p.slug} onClick={() => openPost(p.slug)} style={{
                 display: 'block', width: '100%', textAlign: 'left', cursor: 'pointer',
                 background: 'none', border: 'none', borderTop: '1px solid rgba(26, 58, 58, 0.12)',
                 padding: '32px 0', color: teal, font: 'inherit',
               }}>
                 <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', marginBottom: '12px', alignItems: 'baseline' }}>
                   <span style={{ fontSize: '12px', color: softTeal, opacity: 0.6 }}>{formatPostDate(p.date)}</span>
-                  {p.tags.map((t) => <Tag key={t} name={t} />)}
+                  {p.tags.map((t) => <TagLabel key={t} name={t} />)}
                 </div>
                 <h2 style={{ fontFamily: serif, fontSize: 'clamp(24px, 4vw, 30px)', fontWeight: 400, marginBottom: '10px', lineHeight: 1.25 }}>
                   {p.title}
@@ -2842,7 +2932,7 @@ function BlogPage({ onNavigate }) {
                   {p.excerpt}
                 </p>
                 <span style={{ display: 'inline-block', marginTop: '12px', fontSize: '13px', color: '#E07850' }}>
-                  Read · {readingTime(p)} min →
+                  Read · {p.minutes} min →
                 </span>
               </button>
             ))
