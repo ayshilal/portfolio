@@ -1,3 +1,5 @@
+![Illustration of a Databricks cost dashboard, not my real spend](img/00-cost-dashboard.jpg)
+
 When you start learning Databricks on your own Azure subscription, one question comes up quickly: **how much is this costing me, and on what?** The answer is less obvious than it should be. Azure only shows you one line called "Azure Databricks", and the Databricks screen that breaks costs down is hidden behind an admin login that may reject your account.
 
 This post walks through the whole path, including the snags I hit along the way.
