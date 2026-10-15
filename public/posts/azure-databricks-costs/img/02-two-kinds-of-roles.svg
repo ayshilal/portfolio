@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 300" font-family="Helvetica, Arial, sans-serif">
+  <rect width="900" height="300" fill="#ffffff"/>
+  <text x="450" y="32" text-anchor="middle" font-size="18" font-weight="bold" fill="#1f2937">Why "Owner" isn't enough: Azure has two kinds of role</text>
+  <g font-size="14" fill="#1f2937">
+    <rect x="40" y="60" width="380" height="200" rx="12" fill="#e0ecff" stroke="#3b6fd8"/>
+    <text x="230" y="92" text-anchor="middle" font-weight="bold" font-size="16">Azure roles</text>
+    <text x="230" y="114" text-anchor="middle" fill="#4b5563">e.g. Owner, Contributor</text>
+    <text x="65" y="150">Controls: subscriptions, workspaces,</text>
+    <text x="65" y="170">storage and other resources</text>
+    <text x="65" y="205">Where: your user → Azure role assignments</text>
+    <text x="65" y="240" fill="#b42318">Not checked by the Databricks account console</text>
+    <rect x="480" y="60" width="380" height="200" rx="12" fill="#fdf0d5" stroke="#d99a1e"/>
+    <text x="670" y="92" text-anchor="middle" font-weight="bold" font-size="16">Entra directory roles</text>
+    <text x="670" y="114" text-anchor="middle" fill="#4b5563">e.g. Global Administrator</text>
+    <text x="505" y="150">Controls: the directory itself,</text>
+    <text x="505" y="170">users and sign-in</text>
+    <text x="505" y="205">Where: your user → Assigned roles</text>
+    <text x="505" y="240" fill="#1f7a35">Needed for the first account admin</text>
+  </g>
+  <text x="450" y="288" text-anchor="middle" font-size="13" fill="#4b5563">A personal Microsoft account is an external identity, so use a native directory user.</text>
+</svg>

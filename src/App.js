@@ -2652,7 +2652,8 @@ Track your morning and evening routines, catalog your products by type, and neve
 
 // ─── Public blog ────────────────────────────────────────────────────────────
 // To add a post: put the markdown in public/posts/<slug>.md (without the
-// title line) and add an entry below, newest first.
+// title line) and any images in public/posts/<slug>/img/, then add an entry
+// below, newest first. Image links in the markdown can stay relative (img/x.svg).
 const blogPosts = [
   {
     slug: 'azure-databricks-costs',
@@ -2660,7 +2661,9 @@ const blogPosts = [
     subtitle: 'A step-by-step guide for people doing this for the first time.',
     date: '2026-10-15',
     tags: ['Azure', 'Data'],
-    minutes: 5,
+    minutes: 7,
+    cover: 'azure-databricks-costs/img/00-hero.png',
+    coverAlt: 'Where is my Databricks money going? From one line on your Azure bill to a per-service breakdown',
     excerpt: 'Azure shows a single "Azure Databricks" line on your bill. Here is how to get the per-product breakdown, including the admin-login snag that blocks personal Microsoft accounts.',
   },
 ];
@@ -2680,7 +2683,7 @@ function formatPostDate(iso) {
 }
 
 // Minimal markdown: ## / ### headings, paragraphs, - and 1. lists, > notes,
-// ``` code fences, --- rules; inline **bold**, *italic*, `code`, [links](url).
+// ``` code fences, --- rules, ![alt](src) images, | tables |; inline **bold**, *italic*, `code`, [links](url).
 function renderInline(text, keyBase) {
   const out = [];
   const re = /(\*\*[^*]+\*\*|`[^`]+`|\[[^\]]+\]\([^)]+\)|https?:\/\/[^\s)]+|\*[^*]+\*)/g;
@@ -2701,11 +2704,12 @@ function renderInline(text, keyBase) {
   return out;
 }
 
-function renderMarkdown(md) {
+function renderMarkdown(md, slug) {
   const lines = md.replace(/\r/g, '').split('\n');
   const blocks = [];
   let i = 0;
-  const isSpecial = (l) => /^(#{2,3} |```|> |- |\d+\. |---\s*$)/.test(l) || l.trim() === '';
+  const isSpecial = (l) => /^(#{2,3} |```|> |- |\d+\. |---\s*$|!\[|\|)/.test(l) || l.trim() === '';
+  const cells = (row) => row.trim().replace(/^\||\|$/g, '').split('|').map((c) => c.trim());
   while (i < lines.length) {
     const line = lines[i];
     if (line.trim() === '') { i++; continue; }
@@ -2717,6 +2721,14 @@ function renderMarkdown(md) {
     } else if (/^#{2,3} /.test(line)) {
       blocks.push({ type: line.startsWith('###') ? 'h3' : 'h2', text: line.replace(/^#+ /, '') });
       i++;
+    } else if (/^!\[[^\]]*\]\([^)]+\)\s*$/.test(line)) {
+      const [, alt, src] = line.match(/^!\[([^\]]*)\]\(([^)]+)\)/);
+      blocks.push({ type: 'img', alt, src }); i++;
+    } else if (line.startsWith('|')) {
+      const rows = [];
+      while (i < lines.length && lines[i].startsWith('|')) rows.push(lines[i++]);
+      const body = rows.slice(1).filter((r) => !/^\|[\s:|-]+\|?\s*$/.test(r));
+      blocks.push({ type: 'table', head: cells(rows[0]), rows: body.map(cells) });
     } else if (/^---\s*$/.test(line)) {
       blocks.push({ type: 'hr' }); i++;
     } else if (line.startsWith('> ')) {
@@ -2742,6 +2754,29 @@ function renderMarkdown(md) {
     switch (b.type) {
       case 'h2': return <h2 key={key} style={{ fontFamily: serif, fontSize: 'clamp(26px, 4.5vw, 30px)', fontWeight: 400, lineHeight: 1.25, margin: '8px 0 20px', color: '#1A3A3A' }}>{renderInline(b.text, key)}</h2>;
       case 'h3': return <h3 key={key} style={{ fontSize: '17px', fontWeight: 500, margin: '32px 0 12px', color: '#1A3A3A' }}>{renderInline(b.text, key)}</h3>;
+      case 'img': {
+        const src = /^(https?:)?\//.test(b.src) ? b.src : `${process.env.PUBLIC_URL}/posts/${slug}/${b.src}`;
+        return (
+          <figure key={key} style={{ margin: '8px 0 32px' }}>
+            <img src={src} alt={b.alt} loading="lazy" style={{ display: 'block', width: '100%', height: 'auto', borderRadius: '8px', border: '1px solid rgba(26, 58, 58, 0.1)', background: '#fff' }} />
+            {b.alt && <figcaption style={{ fontSize: '13px', color: '#2D5A5A', opacity: 0.7, marginTop: '10px', textAlign: 'center', lineHeight: 1.5 }}>{b.alt}</figcaption>}
+          </figure>
+        );
+      }
+      case 'table': return (
+        <div key={key} style={{ overflowX: 'auto', margin: '0 0 24px' }}>
+          <table style={{ borderCollapse: 'collapse', width: '100%', fontSize: '14px', lineHeight: 1.5 }}>
+            <thead>
+              <tr>{b.head.map((h, j) => <th key={j} style={{ textAlign: j === b.head.length - 1 ? 'right' : 'left', padding: '10px 12px', borderBottom: '1px solid rgba(26, 58, 58, 0.25)', fontWeight: 500, color: '#1A3A3A', whiteSpace: 'nowrap' }}>{renderInline(h, `${key}-h${j}`)}</th>)}</tr>
+            </thead>
+            <tbody>
+              {b.rows.map((r, j) => (
+                <tr key={j}>{r.map((c, k) => <td key={k} style={{ textAlign: k === r.length - 1 ? 'right' : 'left', padding: '8px 12px', borderBottom: '1px solid rgba(26, 58, 58, 0.08)', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>{renderInline(c, `${key}-${j}-${k}`)}</td>)}</tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      );
       case 'hr': return <hr key={key} style={{ border: 'none', borderTop: '1px solid rgba(26, 58, 58, 0.12)', margin: '48px 0' }} />;
       case 'code': return (
         <pre key={key} style={{ background: '#1A3A3A', color: '#FDF6F0', padding: '20px', borderRadius: '8px', overflowX: 'auto', fontSize: '13px', lineHeight: 1.6, margin: '0 0 24px', fontFamily: '"SFMono-Regular", Consolas, Menlo, monospace' }}>
@@ -2870,11 +2905,14 @@ function BlogPage({ onNavigate }) {
               {post.subtitle}
             </p>
           )}
-          <p style={{ fontSize: '13px', color: softTeal, opacity: 0.7, marginBottom: '56px' }}>
+          <p style={{ fontSize: '13px', color: softTeal, opacity: 0.7, marginBottom: post.cover ? '32px' : '56px' }}>
             {formatPostDate(post.date)} · {post.minutes} min read
           </p>
+          {post.cover && (
+            <img src={`${process.env.PUBLIC_URL}/posts/${post.cover}`} alt={post.coverAlt || ''} style={{ display: 'block', width: '100%', height: 'auto', borderRadius: '10px', marginBottom: '56px' }} />
+          )}
           <div style={{ fontSize: '17px', lineHeight: 1.8, color: softTeal, fontWeight: 300 }}>
-            {postBody.slug === post.slug && postBody.md && renderMarkdown(postBody.md)}
+            {postBody.slug === post.slug && postBody.md && renderMarkdown(postBody.md, post.slug)}
             {postBody.slug === post.slug && postBody.error && (
               <p>This post couldn't be loaded. Please try again in a moment.</p>
             )}
@@ -2925,6 +2963,9 @@ function BlogPage({ onNavigate }) {
                   <span style={{ fontSize: '12px', color: softTeal, opacity: 0.6 }}>{formatPostDate(p.date)}</span>
                   {p.tags.map((t) => <TagLabel key={t} name={t} />)}
                 </div>
+                {p.cover && (
+                  <img src={`${process.env.PUBLIC_URL}/posts/${p.cover}`} alt="" loading="lazy" style={{ display: 'block', width: '100%', height: 'auto', borderRadius: '8px', marginBottom: '20px' }} />
+                )}
                 <h2 style={{ fontFamily: serif, fontSize: 'clamp(24px, 4vw, 30px)', fontWeight: 400, marginBottom: '10px', lineHeight: 1.25 }}>
                   {p.title}
                 </h2>

@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 260" font-family="Helvetica, Arial, sans-serif">
+  <rect width="900" height="260" fill="#ffffff"/>
+  <text x="450" y="32" text-anchor="middle" font-size="18" font-weight="bold" fill="#1f2937">From one Azure total to a per-service breakdown</text>
+  <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#6b7280"/></marker></defs>
+  <g font-size="13" fill="#1f2937" text-anchor="middle">
+    <rect x="20" y="70" width="150" height="110" rx="10" fill="#e0ecff" stroke="#3b6fd8"/>
+    <text x="95" y="100" font-weight="bold">1. Azure portal</text>
+    <text x="95" y="125">Cost analysis</text>
+    <text x="95" y="145">One "Databricks"</text>
+    <text x="95" y="163">total</text>
+    <rect x="195" y="70" width="150" height="110" rx="10" fill="#fdf0d5" stroke="#d99a1e"/>
+    <text x="270" y="100" font-weight="bold">2. Entra ID</text>
+    <text x="270" y="125">Create native</text>
+    <text x="270" y="145">admin user</text>
+    <text x="270" y="163">(Global Admin)</text>
+    <rect x="370" y="70" width="150" height="110" rx="10" fill="#fde2e1" stroke="#d24b45"/>
+    <text x="445" y="100" font-weight="bold">3. Account</text>
+    <text x="445" y="118" font-weight="bold">console</text>
+    <text x="445" y="143">Add admin to</text>
+    <text x="445" y="161">workspace</text>
+    <rect x="545" y="70" width="150" height="110" rx="10" fill="#e3f4e6" stroke="#3f9a52"/>
+    <text x="620" y="100" font-weight="bold">4. Import</text>
+    <text x="620" y="118" font-weight="bold">dashboard</text>
+    <text x="620" y="143">Usage →</text>
+    <text x="620" y="161">Setup dashboard</text>
+    <rect x="720" y="70" width="160" height="110" rx="10" fill="#efe6fb" stroke="#7a52c7"/>
+    <text x="800" y="100" font-weight="bold">5. Grant access</text>
+    <text x="800" y="125">Catalog → system</text>
+    <text x="800" y="145">→ Permissions</text>
+    <text x="800" y="163">→ Grant</text>
+  </g>
+  <g stroke="#6b7280" stroke-width="2" marker-end="url(#a)">
+    <line x1="172" y1="125" x2="192" y2="125"/>
+    <line x1="347" y1="125" x2="367" y2="125"/>
+    <line x1="522" y1="125" x2="542" y2="125"/>
+    <line x1="697" y1="125" x2="717" y2="125"/>
+  </g>
+  <text x="450" y="225" text-anchor="middle" font-size="14" fill="#374151">Result: spend by product, workspace and endpoint</text>
+</svg>

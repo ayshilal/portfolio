@@ -2,6 +2,8 @@ When you start learning Databricks on your own Azure subscription, one question 
 
 This post walks through the whole path, including the snags I hit along the way.
 
+![The five stages, from the Azure total to a per-service breakdown](img/01-overview-flow.svg)
+
 ---
 
 ## Step 1: Get the quick total from Azure
@@ -28,6 +30,8 @@ If you created your Azure subscription with a **personal Microsoft account** (fo
 
 - **Being Owner isn't enough.** "Owner" is an Azure *resource* role. The account console checks a *directory* role, Global Administrator, in **Microsoft Entra ID** (formerly Azure Active Directory).
 - **Your personal account is treated as an outsider.** A personal Microsoft account doesn't really live in your directory; Azure stores it as an external identity. The account console wants a native directory user.
+
+![Azure roles versus Entra directory roles](img/02-two-kinds-of-roles.svg)
 
 You can't convert your existing account, but you can create a new native admin user next to it.
 
@@ -82,6 +86,10 @@ If you see *"Unable to register the dashboard. Please confirm that you are a use
 
 The dashboard opens in your workspace. At first, every chart may say **"Unable to render visualization"**. That's expected: nobody has permission to read the billing tables yet.
 
+![Every chart says "Unable to render visualization" before access is granted](img/05-unable-to-render.svg)
+
+Click **Show error** on any chart to see the reason. It usually mentions a permission on `system.billing`, which step 7 fixes.
+
 ---
 
 ## Step 7: Give yourself access to the billing data
@@ -96,6 +104,8 @@ In your workspace:
 4. Under **Principals**, add your normal account.
 5. Tick **USE CATALOG**, **USE SCHEMA** and **SELECT**.
 6. Click **Confirm**.
+
+![The Grant dialog with USE CATALOG, USE SCHEMA and SELECT ticked](img/03-grant-on-system.svg)
 
 Granting on the whole `system` catalog covers billing plus the other system tables the dashboard uses.
 
@@ -116,9 +126,57 @@ You now get spend broken down by product (model serving, vector search, SQL, job
 
 ---
 
+## Step 9: Look at your AI costs
+
+To see only AI spend, open the **Usage Overview** tab and use the **Billing Origin Product** filter at the top. Select the AI-related products, with names such as `MODEL_SERVING`, `VECTOR_SEARCH` and `AI_GATEWAY`. For cost per endpoint, open the **Top Objects** tab with the same filter.
+
+The filter only lists products that already appear in your billing data, and billing data arrives with a delay of several hours. If you've only made a few test calls, come back the next day.
+
+![Illustrative example of AI costs during a week of labs](img/04-ai-cost-example.svg)
+
+The pattern to expect: endpoints that stay up all day dominate the bill, while the prompts you send cost almost nothing.
+
+---
+
 ## Bonus: query the costs yourself
 
-Once you have access, you can write your own query in the **SQL Editor**:
+Once you have access, start by asking which products you've used at all:
+
+```sql
+SELECT billing_origin_product,
+       MIN(usage_date) AS first_seen,
+       ROUND(SUM(usage_quantity), 3) AS dbus
+FROM system.billing.usage
+GROUP BY 1
+ORDER BY dbus DESC;
+```
+
+Here are my real results after about two months of study labs:
+
+| billing_origin_product | first_seen | dbus |
+|---|---|---|
+| INTERACTIVE | 2026-08-11 | 35.565 |
+| SQL | 2026-08-11 | 16.387 |
+| GENIE | 2026-08-10 | 9.699 |
+| PREDICTIVE_OPTIMIZATION | 2026-08-11 | 9.244 |
+| JOBS | 2026-08-11 | 5.711 |
+| DLT | 2026-08-19 | 2.123 |
+| NETWORKING | 2026-08-19 | 0.019 |
+
+How to read it:
+
+- **INTERACTIVE** is notebook compute. Running notebooks was my biggest cost.
+- **SQL** is SQL warehouses, including the one behind the usage dashboard.
+- **GENIE** is natural-language questions over tables.
+- **PREDICTIVE_OPTIMIZATION** is automatic background maintenance of managed tables. It runs without you doing anything, which surprises many beginners.
+- **JOBS** and **DLT** are scheduled jobs and pipelines.
+- **NETWORKING** is data transfer, which is negligible here.
+
+Notice what's **missing**: `MODEL_SERVING` and `VECTOR_SEARCH`. I had already called the hosted Llama and embedding models, but a few test prompts were too small, and too recent, to show up yet. Those rows appear once you create endpoints or use the models more.
+
+The units are DBUs (Databricks Units), not dollars. To turn them into an estimated price, join with the list-price table, as in the next query.
+
+Next, a breakdown by product and endpoint with estimated cost:
 
 ```sql
 SELECT u.usage_date,
